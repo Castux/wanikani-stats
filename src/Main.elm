@@ -38,6 +38,7 @@ type alias LoadingState =
 type alias LoadedState =
     { probas : Probabilities
     , rates : Maybe (List Float)
+    , lessonRate : Float
     }
 
 
@@ -127,7 +128,7 @@ update msg state =
                         probas =
                             fixProbabilities <| computeProbabilities newCounts
                     in
-                    ( Loaded (LoadedState probas Nothing), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
+                    ( Loaded (LoadedState probas Nothing 1.0), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
 
         ( GotApiResponse (Err resp), Loading loadingState ) ->
             ( Loading { loadingState | errorMsg = Just "Error!" }, Cmd.none )
@@ -153,7 +154,7 @@ viewLoading state =
         ]
 
 
-viewRates rates =
+viewRates rates lessonRate =
     let
         headersRow =
             levelNames
@@ -163,7 +164,7 @@ viewRates rates =
 
         ratesRow =
             rates
-                |> List.map (format 2 >> Html.text >> List.singleton >> Html.td [])
+                |> List.map ((*) lessonRate >> format 2 >> Html.text >> List.singleton >> Html.td [])
                 |> Html.tr []
     in
     Html.table
@@ -171,7 +172,7 @@ viewRates rates =
         [ headersRow, ratesRow ]
 
 
-viewRatesTotals rates =
+viewRatesTotals rates lessonRate =
     Html.table
         []
         [ Html.tr []
@@ -179,13 +180,13 @@ viewRatesTotals rates =
             , Html.th [] [ Html.text "Reviews/lesson total" ]
             ]
         , Html.tr []
-            [ Html.td [] [ rates |> List.take 4 |> List.sum |> format 2 |> Html.text ]
-            , Html.td [] [ rates |> List.sum |> format 2 |> Html.text ]
+            [ Html.td [] [ rates |> List.take 4 |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
+            , Html.td [] [ rates |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
             ]
         ]
 
 
-viewQueueSizes rates =
+viewQueueSizes rates lessonRate =
     let
         headersRow =
             levelNames
@@ -196,7 +197,7 @@ viewQueueSizes rates =
         queuesRow =
             rates
                 |> List.map2 (*) levelDelays
-                |> List.map (format 2 >> Html.text >> List.singleton >> Html.td [])
+                |> List.map ((*) lessonRate >> format 2 >> Html.text >> List.singleton >> Html.td [])
                 |> Html.tr []
     in
     Html.table
@@ -204,10 +205,11 @@ viewQueueSizes rates =
         [ headersRow, queuesRow ]
 
 
-viewQueueSizesTotals rates =
+viewQueueSizesTotals rates lessonRate =
     let
         sizes =
             List.map2 (*) rates levelDelays
+                |> List.map ((*) lessonRate)
     in
     Html.table
         []
@@ -246,11 +248,11 @@ viewLoaded state =
         , viewProbas state.probas
         , Html.h1 [] [ Html.text "Computed review rates to keep up with the lessons" ]
         , Html.p [] [ Html.text "Relative to lesson rate. Also equal to the average number of reviews done for each level, for a single item." ]
-        , Maybe.map viewRates state.rates |> Maybe.withDefault (Html.text "")
-        , Maybe.map viewRatesTotals state.rates |> Maybe.withDefault (Html.text "")
+        , Maybe.map (\r -> viewRates r state.lessonRate) state.rates |> Maybe.withDefault (Html.text "")
+        , Maybe.map (\r -> viewRatesTotals r state.lessonRate) state.rates |> Maybe.withDefault (Html.text "")
         , Html.h1 [] [ Html.text "Average queue sizes" ]
-        , Maybe.map viewQueueSizes state.rates |> Maybe.withDefault (Html.text "")
-        , Maybe.map viewQueueSizesTotals state.rates |> Maybe.withDefault (Html.text "")
+        , Maybe.map (\r -> viewQueueSizes r state.lessonRate) state.rates |> Maybe.withDefault (Html.text "")
+        , Maybe.map (\r -> viewQueueSizesTotals r state.lessonRate) state.rates |> Maybe.withDefault (Html.text "")
         , Html.h1 [] [ Html.text "Time to burn" ]
         , Maybe.map viewBurnTime state.rates |> Maybe.withDefault (Html.text "")
         ]
