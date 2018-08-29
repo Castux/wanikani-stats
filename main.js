@@ -770,11 +770,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.S.D === region.X.D)
+	if (region.S.E === region.X.E)
 	{
-		return 'on line ' + region.S.D;
+		return 'on line ' + region.S.E;
 	}
-	return 'on lines ' + region.S.D + ' through ' + region.X.D;
+	return 'on lines ' + region.S.E + ' through ' + region.X.E;
 }
 
 
@@ -4085,7 +4085,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		impl.aY,
 		impl.aU,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.E && impl.E(sendToApp)
+			var divertHrefToApp = impl.F && impl.F(sendToApp)
 			var view = impl.a_;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
@@ -4155,7 +4155,7 @@ function _Browser_application(impl)
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		E: function(sendToApp)
+		F: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4253,17 +4253,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aI: 'hidden', A: 'visibilitychange' }
+		? { aI: 'hidden', B: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aI: 'mozHidden', A: 'mozvisibilitychange' }
+		? { aI: 'mozHidden', B: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aI: 'msHidden', A: 'msvisibilitychange' }
+		? { aI: 'msHidden', B: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aI: 'webkitHidden', A: 'webkitvisibilitychange' }
-		: { aI: 'hidden', A: 'visibilitychange' };
+		? { aI: 'webkitHidden', B: 'webkitvisibilitychange' }
+		: { aI: 'hidden', B: 'visibilitychange' };
 }
 
 
@@ -4348,8 +4348,8 @@ function _Browser_getViewport()
 		at: {
 			M: _Browser_window.pageXOffset,
 			N: _Browser_window.pageYOffset,
-			y: _Browser_doc.documentElement.clientWidth,
-			s: _Browser_doc.documentElement.clientHeight
+			z: _Browser_doc.documentElement.clientWidth,
+			t: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4359,8 +4359,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		y: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		s: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		z: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		t: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4384,14 +4384,14 @@ function _Browser_getViewportOf(id)
 	{
 		return {
 			ap: {
-				y: node.scrollWidth,
-				s: node.scrollHeight
+				z: node.scrollWidth,
+				t: node.scrollHeight
 			},
 			at: {
 				M: node.scrollLeft,
 				N: node.scrollTop,
-				y: node.clientWidth,
-				s: node.clientHeight
+				z: node.clientWidth,
+				t: node.clientHeight
 			}
 		};
 	});
@@ -4425,14 +4425,14 @@ function _Browser_getElement(id)
 			at: {
 				M: x,
 				N: y,
-				y: _Browser_doc.documentElement.clientWidth,
-				s: _Browser_doc.documentElement.clientHeight
+				z: _Browser_doc.documentElement.clientWidth,
+				t: _Browser_doc.documentElement.clientHeight
 			},
 			aD: {
 				M: x + rect.left,
 				N: y + rect.top,
-				y: rect.width,
-				s: rect.height
+				z: rect.width,
+				t: rect.height
 			}
 		};
 	});
@@ -5798,11 +5798,11 @@ var author$project$Main$getStats = F2(
 		return A2(elm$http$Http$send, author$project$Main$GotApiResponse, request);
 	});
 var author$project$Main$emptyCounts = elm$core$Dict$empty;
-var author$project$Main$initState = {B: author$project$Main$emptyCounts, C: elm$core$Maybe$Nothing, t: 'f0805f70-97af-49aa-a85f-e264e3c489ec'};
+var author$project$Main$initState = {C: author$project$Main$emptyCounts, D: elm$core$Maybe$Nothing, u: 'f0805f70-97af-49aa-a85f-e264e3c489ec'};
 var author$project$Main$init = function (flags) {
 	return _Utils_Tuple2(
 		author$project$Main$Loading(author$project$Main$initState),
-		A2(author$project$Main$getStats, author$project$Main$initState.t, elm$core$Maybe$Nothing));
+		A2(author$project$Main$getStats, author$project$Main$initState.u, elm$core$Maybe$Nothing));
 };
 var author$project$Main$GotSolution = function (a) {
 	return {$: 2, a: a};
@@ -5826,7 +5826,7 @@ var author$project$Main$Loaded = function (a) {
 };
 var author$project$Main$LoadedState = F2(
 	function (probas, rates) {
-		return {ai: probas, L: rates};
+		return {ai: probas, q: rates};
 	});
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5998,14 +5998,14 @@ var author$project$Main$update = F2(
 						author$project$Main$Loading(
 							_Utils_update(
 								author$project$Main$initState,
-								{t: key})),
+								{u: key})),
 						A2(author$project$Main$getStats, key, elm$core$Maybe$Nothing));
 				case 1:
 					if (!_n0.a.a.$) {
 						if (!_n0.b.$) {
 							var resp = _n0.a.a.a;
 							var loadingState = _n0.b.a;
-							var newCounts = A3(elm$core$List$foldr, author$project$Main$countReview, loadingState.B, resp.O);
+							var newCounts = A3(elm$core$List$foldr, author$project$Main$countReview, loadingState.C, resp.O);
 							var _n1 = resp.ae.ac;
 							if (!_n1.$) {
 								var nextUrl = _n1.a;
@@ -6013,10 +6013,10 @@ var author$project$Main$update = F2(
 									author$project$Main$Loading(
 										_Utils_update(
 											loadingState,
-											{B: newCounts, C: elm$core$Maybe$Nothing})),
+											{C: newCounts, D: elm$core$Maybe$Nothing})),
 									A2(
 										author$project$Main$getStats,
-										loadingState.t,
+										loadingState.u,
 										elm$core$Maybe$Just(nextUrl)));
 							} else {
 								var probas = author$project$Main$fixProbabilities(
@@ -6043,7 +6043,7 @@ var author$project$Main$update = F2(
 									_Utils_update(
 										loadingState,
 										{
-											C: elm$core$Maybe$Just('Error!')
+											D: elm$core$Maybe$Just('Error!')
 										})),
 								elm$core$Platform$Cmd$none);
 						} else {
@@ -6059,7 +6059,7 @@ var author$project$Main$update = F2(
 								_Utils_update(
 									loadedState,
 									{
-										L: elm$core$Maybe$Just(rates)
+										q: elm$core$Maybe$Just(rates)
 									})),
 							elm$core$Platform$Cmd$none);
 					} else {
@@ -6069,11 +6069,27 @@ var author$project$Main$update = F2(
 		}
 		return _Utils_Tuple2(state, elm$core$Platform$Cmd$none);
 	});
-var author$project$Main$levelNames = _List_fromArray(
-	['apprentice 1', 'apprentice 2', 'apprentice 3', 'apprentice 4', 'guru 1', 'guru 2', 'master', 'enlightened', 'burned']);
-var elm$core$List$singleton = function (value) {
-	return _List_fromArray(
-		[value]);
+var author$project$Main$flip = F3(
+	function (f, x, y) {
+		return A2(f, y, x);
+	});
+var elm$core$Basics$pow = _Basics_pow;
+var elm$core$Basics$round = _Basics_round;
+var elm$core$String$fromFloat = _String_fromNumber;
+var author$project$Main$format = F2(
+	function (n, f) {
+		var n2 = n;
+		return elm$core$String$fromFloat(
+			function (x) {
+				return x / A2(elm$core$Basics$pow, 10.0, n2);
+			}(
+				elm$core$Basics$round(
+					f * A2(elm$core$Basics$pow, 10.0, n2))));
+	});
+var author$project$Main$levelDelays = _List_fromArray(
+	[4.0 / 24.0, 8.0 / 24.0, 1.0, 2.0, 7.0, 14.0, 30.0, 120.0]);
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
 };
 var elm$json$Json$Decode$succeed = _Json_succeed;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
@@ -6088,10 +6104,59 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
+var elm$html$Html$table = _VirtualDom_node('table');
+var elm$html$Html$td = _VirtualDom_node('td');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$tr = _VirtualDom_node('tr');
+var author$project$Main$viewBurnTime = function (rates) {
+	var totalSize = elm$core$List$sum(
+		A3(elm$core$List$map2, elm$core$Basics$mul, rates, author$project$Main$levelDelays));
+	return A2(
+		elm$html$Html$table,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$tr,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$th,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Average burn time')
+							]))
+					])),
+				A2(
+				elm$html$Html$tr,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								A3(
+									author$project$Main$flip,
+									elm$core$Basics$append,
+									' days',
+									A2(author$project$Main$format, 2, totalSize)))
+							]))
+					]))
+			]));
+};
+var author$project$Main$levelNames = _List_fromArray(
+	['apprentice 1', 'apprentice 2', 'apprentice 3', 'apprentice 4', 'guru 1', 'guru 2', 'master', 'enlightened', 'burned']);
+var elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
 var author$project$Main$viewProbaHeaders = A2(
 	elm$html$Html$tr,
 	_List_Nil,
@@ -6111,23 +6176,6 @@ var author$project$Main$viewProbaHeaders = A2(
 				elm$core$List$map,
 				elm$core$Basics$append('To '),
 				author$project$Main$levelNames))));
-var author$project$Main$flip = F3(
-	function (f, x, y) {
-		return A2(f, y, x);
-	});
-var elm$core$Basics$pow = _Basics_pow;
-var elm$core$Basics$round = _Basics_round;
-var elm$core$String$fromFloat = _String_fromNumber;
-var author$project$Main$format = F2(
-	function (n, f) {
-		var n2 = n;
-		return elm$core$String$fromFloat(
-			function (x) {
-				return x / A2(elm$core$Basics$pow, 10.0, n2);
-			}(
-				elm$core$Basics$round(
-					f * A2(elm$core$Basics$pow, 10.0, n2))));
-	});
 var author$project$Main$toPercentage = function (f) {
 	return A3(
 		author$project$Main$flip,
@@ -6175,7 +6223,6 @@ var elm$core$Maybe$map = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
-var elm$html$Html$td = _VirtualDom_node('td');
 var author$project$Main$viewProbaRow = F2(
 	function (probas, row) {
 		return A2(
@@ -6220,7 +6267,6 @@ var author$project$Main$viewProbaRow = F2(
 						},
 						A2(elm$core$List$range, 1, 9)))));
 	});
-var elm$html$Html$table = _VirtualDom_node('table');
 var author$project$Main$viewProbas = function (probas) {
 	return A2(
 		elm$html$Html$table,
@@ -6359,6 +6405,106 @@ var elm$core$List$take = F2(
 	function (n, list) {
 		return A3(elm$core$List$takeFast, 0, n, list);
 	});
+var author$project$Main$viewQueueSizes = function (rates) {
+	var queuesRow = A2(
+		elm$html$Html$tr,
+		_List_Nil,
+		A2(
+			elm$core$List$map,
+			A2(
+				elm$core$Basics$composeR,
+				author$project$Main$format(2),
+				A2(
+					elm$core$Basics$composeR,
+					elm$html$Html$text,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$List$singleton,
+						elm$html$Html$td(_List_Nil)))),
+			A3(elm$core$List$map2, elm$core$Basics$mul, author$project$Main$levelDelays, rates)));
+	var headersRow = A2(
+		elm$html$Html$tr,
+		_List_Nil,
+		A2(
+			elm$core$List$map,
+			A2(
+				elm$core$Basics$composeR,
+				elm$core$Basics$append('Average '),
+				A2(
+					elm$core$Basics$composeR,
+					A2(author$project$Main$flip, elm$core$Basics$append, ' items'),
+					A2(
+						elm$core$Basics$composeR,
+						elm$html$Html$text,
+						A2(
+							elm$core$Basics$composeR,
+							elm$core$List$singleton,
+							elm$html$Html$th(_List_Nil))))),
+			A2(elm$core$List$take, 8, author$project$Main$levelNames)));
+	return A2(
+		elm$html$Html$table,
+		_List_Nil,
+		_List_fromArray(
+			[headersRow, queuesRow]));
+};
+var author$project$Main$viewQueueSizesTotals = function (rates) {
+	var sizes = A3(elm$core$List$map2, elm$core$Basics$mul, rates, author$project$Main$levelDelays);
+	return A2(
+		elm$html$Html$table,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$tr,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$th,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Average apprentice items')
+							])),
+						A2(
+						elm$html$Html$th,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Average items')
+							]))
+					])),
+				A2(
+				elm$html$Html$tr,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								A2(
+									author$project$Main$format,
+									2,
+									elm$core$List$sum(
+										A2(elm$core$List$take, 4, sizes))))
+							])),
+						A2(
+						elm$html$Html$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								A2(
+									author$project$Main$format,
+									2,
+									elm$core$List$sum(sizes)))
+							]))
+					]))
+			]));
+};
 var author$project$Main$viewRates = function (rates) {
 	var ratesRow = A2(
 		elm$html$Html$tr,
@@ -6398,9 +6544,6 @@ var author$project$Main$viewRates = function (rates) {
 		_List_fromArray(
 			[headersRow, ratesRow]));
 };
-var elm$core$List$sum = function (numbers) {
-	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
-};
 var author$project$Main$viewRatesTotals = function (rates) {
 	return A2(
 		elm$html$Html$table,
@@ -6417,7 +6560,7 @@ var author$project$Main$viewRatesTotals = function (rates) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('Reviews/lesson apprentice')
+								elm$html$Html$text('Reviews/lesson all apprentice levels')
 							])),
 						A2(
 						elm$html$Html$th,
@@ -6459,21 +6602,70 @@ var author$project$Main$viewRatesTotals = function (rates) {
 			]));
 };
 var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$p = _VirtualDom_node('p');
 var author$project$Main$viewLoaded = function (state) {
 	return A2(
 		elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Accuracy')
+					])),
 				author$project$Main$viewProbas(state.ai),
 				A2(
-				elm$core$Maybe$withDefault,
-				elm$html$Html$text(''),
-				A2(elm$core$Maybe$map, author$project$Main$viewRates, state.L)),
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Computed review rates to keep up with the lessons')
+					])),
+				A2(
+				elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Relative to lesson rate. Also equal to the average number of reviews done for each level, for a single item.')
+					])),
 				A2(
 				elm$core$Maybe$withDefault,
 				elm$html$Html$text(''),
-				A2(elm$core$Maybe$map, author$project$Main$viewRatesTotals, state.L))
+				A2(elm$core$Maybe$map, author$project$Main$viewRates, state.q)),
+				A2(
+				elm$core$Maybe$withDefault,
+				elm$html$Html$text(''),
+				A2(elm$core$Maybe$map, author$project$Main$viewRatesTotals, state.q)),
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Average queue sizes')
+					])),
+				A2(
+				elm$core$Maybe$withDefault,
+				elm$html$Html$text(''),
+				A2(elm$core$Maybe$map, author$project$Main$viewQueueSizes, state.q)),
+				A2(
+				elm$core$Maybe$withDefault,
+				elm$html$Html$text(''),
+				A2(elm$core$Maybe$map, author$project$Main$viewQueueSizesTotals, state.q)),
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Time to burn')
+					])),
+				A2(
+				elm$core$Maybe$withDefault,
+				elm$html$Html$text(''),
+				A2(elm$core$Maybe$map, author$project$Main$viewBurnTime, state.q))
 			]));
 };
 var author$project$Main$NewKey = function (a) {
@@ -6539,7 +6731,7 @@ var author$project$Main$viewLoading = function (state) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$placeholder('API v2 key'),
-						elm$html$Html$Attributes$value(state.t),
+						elm$html$Html$Attributes$value(state.u),
 						elm$html$Html$Events$onInput(author$project$Main$NewKey)
 					]),
 				_List_Nil),
@@ -6551,7 +6743,7 @@ var author$project$Main$viewLoading = function (state) {
 						elm$html$Html$text(
 						elm$core$String$fromInt(
 							elm$core$List$sum(
-								elm$core$Dict$values(state.B))))
+								elm$core$Dict$values(state.C))))
 					])),
 				A2(
 				elm$html$Html$div,
@@ -6559,7 +6751,7 @@ var author$project$Main$viewLoading = function (state) {
 				_List_fromArray(
 					[
 						elm$html$Html$text(
-						A2(elm$core$Maybe$withDefault, '', state.C))
+						A2(elm$core$Maybe$withDefault, '', state.D))
 					]))
 			]));
 };

@@ -83,6 +83,18 @@ levelNames =
     ]
 
 
+levelDelays =
+    [ 4.0 / 24.0
+    , 8.0 / 24.0
+    , 1.0
+    , 2.0
+    , 7.0
+    , 14.0
+    , 30.0
+    , 120.0
+    ]
+
+
 initState =
     { key = "f0805f70-97af-49aa-a85f-e264e3c489ec"
     , errorMsg = Nothing
@@ -150,7 +162,8 @@ viewRates rates =
                 |> Html.tr []
 
         ratesRow =
-            List.map (format 2 >> Html.text >> List.singleton >> Html.td []) rates
+            rates
+                |> List.map (format 2 >> Html.text >> List.singleton >> Html.td [])
                 |> Html.tr []
     in
     Html.table
@@ -162,7 +175,7 @@ viewRatesTotals rates =
     Html.table
         []
         [ Html.tr []
-            [ Html.th [] [ Html.text "Reviews/lesson apprentice" ]
+            [ Html.th [] [ Html.text "Reviews/lesson all apprentice levels" ]
             , Html.th [] [ Html.text "Reviews/lesson total" ]
             ]
         , Html.tr []
@@ -172,13 +185,74 @@ viewRatesTotals rates =
         ]
 
 
+viewQueueSizes rates =
+    let
+        headersRow =
+            levelNames
+                |> List.take 8
+                |> List.map ((++) "Average " >> flip (++) " items" >> Html.text >> List.singleton >> Html.th [])
+                |> Html.tr []
+
+        queuesRow =
+            rates
+                |> List.map2 (*) levelDelays
+                |> List.map (format 2 >> Html.text >> List.singleton >> Html.td [])
+                |> Html.tr []
+    in
+    Html.table
+        []
+        [ headersRow, queuesRow ]
+
+
+viewQueueSizesTotals rates =
+    let
+        sizes =
+            List.map2 (*) rates levelDelays
+    in
+    Html.table
+        []
+        [ Html.tr []
+            [ Html.th [] [ Html.text "Average apprentice items" ]
+            , Html.th [] [ Html.text "Average items" ]
+            ]
+        , Html.tr []
+            [ Html.td [] [ sizes |> List.take 4 |> List.sum |> format 2 |> Html.text ]
+            , Html.td [] [ sizes |> List.sum |> format 2 |> Html.text ]
+            ]
+        ]
+
+
+viewBurnTime rates =
+    let
+        totalSize =
+            List.map2 (*) rates levelDelays |> List.sum
+    in
+    Html.table
+        []
+        [ Html.tr []
+            [ Html.th [] [ Html.text "Average burn time" ]
+            ]
+        , Html.tr []
+            [ Html.td [] [ totalSize |> format 2 |> flip (++) " days" |> Html.text ]
+            ]
+        ]
+
+
 viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     Html.div
         []
-        [ viewProbas state.probas
+        [ Html.h1 [] [ Html.text "Accuracy" ]
+        , viewProbas state.probas
+        , Html.h1 [] [ Html.text "Computed review rates to keep up with the lessons" ]
+        , Html.p [] [ Html.text "Relative to lesson rate. Also equal to the average number of reviews done for each level, for a single item." ]
         , Maybe.map viewRates state.rates |> Maybe.withDefault (Html.text "")
         , Maybe.map viewRatesTotals state.rates |> Maybe.withDefault (Html.text "")
+        , Html.h1 [] [ Html.text "Average queue sizes" ]
+        , Maybe.map viewQueueSizes state.rates |> Maybe.withDefault (Html.text "")
+        , Maybe.map viewQueueSizesTotals state.rates |> Maybe.withDefault (Html.text "")
+        , Html.h1 [] [ Html.text "Time to burn" ]
+        , Maybe.map viewBurnTime state.rates |> Maybe.withDefault (Html.text "")
         ]
 
 
