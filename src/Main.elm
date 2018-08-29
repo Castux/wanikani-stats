@@ -25,7 +25,8 @@ type alias Probabilities =
 type alias State =
     { key : String
     , errorMsg : Maybe String
-    , counts : Counts
+    , counts : Maybe Counts
+    , probas : Maybe Probabilities
     }
 
 
@@ -56,7 +57,8 @@ type alias ApiResponse a =
 initState =
     { key = "f0805f70-97af-49aa-a85f-e264e3c489ec"
     , errorMsg = Nothing
-    , counts = emptyCounts
+    , counts = Just emptyCounts
+    , probas = Nothing
     }
 
 
@@ -65,6 +67,7 @@ init flags =
     ( initState, Cmd.none )
 
 
+update : Message -> State -> ( State, Cmd Message )
 update msg state =
     case msg of
         NewKey key ->
@@ -79,8 +82,18 @@ update msg state =
 
                         Nothing ->
                             Cmd.none
+
+                newCounts =
+                    List.foldr countReview (Maybe.withDefault Dict.empty state.counts) resp.data
+
+                total =
+                    newCounts |> Dict.values |> List.sum
             in
-            ( { state | counts = List.foldr countReview state.counts resp.data }, cmd )
+            if total == resp.totalCount then
+                ( { state | counts = Nothing, probas = Just (computeProbabilities newCounts) }, cmd )
+
+            else
+                ( { state | counts = Just newCounts }, cmd )
 
         GotApiResponse (Err resp) ->
             ( { state | errorMsg = Just (Debug.toString resp) }, Cmd.none )
@@ -95,8 +108,18 @@ view state =
             , Html.Events.onInput NewKey
             ]
             []
-        , Html.div [] [ state.counts |> Debug.toString |> Html.text ]
-        , Html.div [] [ state.counts |> computeProbabilities |> Debug.toString |> Html.text ]
+        , case state.counts of
+            Just counts ->
+                Html.div [] [ counts |> Debug.toString |> Html.text ]
+
+            _ ->
+                Html.text ""
+        , case state.probas of
+            Just probas ->
+                Html.div [] [ probas |> Debug.toString |> Html.text ]
+
+            _ ->
+                Html.text ""
         , Html.div [] [ state.errorMsg |> Maybe.withDefault "" |> Html.text ]
         ]
 
