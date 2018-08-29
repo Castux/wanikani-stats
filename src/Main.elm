@@ -91,7 +91,7 @@ update msg state =
                     ( Loading { loadingState | counts = newCounts }, getStats loadingState.key (Just nextUrl) )
 
                 Nothing ->
-                    ( Loaded <| LoadedState <| computeProbabilities newCounts, Cmd.none )
+                    ( Loaded <| LoadedState <| fixProbabilities <| computeProbabilities newCounts, Cmd.none )
 
         ( GotApiResponse (Err resp), Loading loadingState ) ->
             ( Loading { loadingState | errorMsg = Just (Debug.toString resp) }, Cmd.none )
@@ -205,6 +205,18 @@ computeProbabilities counts =
                     1.0
         )
         counts
+
+
+fixProbabilities : Probabilities -> Probabilities
+fixProbabilities probas =
+    let
+        fix : ( Int, Int ) -> Probabilities -> Probabilities
+        fix index dict =
+            Dict.update index (Just << Maybe.withDefault 1.0) dict
+    in
+    List.range 1 8
+        |> List.map (\x -> ( x, x + 1 ))
+        |> List.foldr fix probas
 
 
 main =
