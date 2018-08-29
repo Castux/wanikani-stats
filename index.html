@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>Wanikani Statistics</title>
-        <!--<link rel="stylesheet" href="style.css" />-->
+        <link rel="stylesheet" href="style.css" />
         <script src="main.js"></script>
         <script src="numeric-1.2.6.min.js"></script>
     </head>
@@ -16,9 +16,8 @@
 
 
             app.ports.solve.subscribe(function(data){
-                console.log(data);
-                var inv = numeric.solve(data.a,data.b);
-                console.log(inv);
+                var sol = numeric.solve(data.a,data.b);
+                app.ports.solution.send(sol);
             });
         </script>
     </body>

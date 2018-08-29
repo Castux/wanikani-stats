@@ -1,4 +1,4 @@
-port module Matrix exposing (makepProblemMatrix, solve)
+port module Matrix exposing (makepProblemMatrix, solution, solve)
 
 import Dict exposing (Dict)
 
@@ -31,3 +31,6 @@ makepProblemMatrix size values =
 
 
 port solve : { a : Matrix, b : List Float } -> Cmd msg
+
+
+port solution : (List Float -> msg) -> Sub msg

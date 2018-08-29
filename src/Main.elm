@@ -1,4 +1,4 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 import Browser
 import Dict exposing (Dict)
@@ -17,6 +17,7 @@ flip f x y =
 type Message
     = NewKey String
     | GotApiResponse (Result Http.Error (ApiResponse Review))
+    | GotSolution (List Float)
 
 
 type alias Counts =
@@ -36,6 +37,7 @@ type alias LoadingState =
 
 type alias LoadedState =
     { probas : Probabilities
+    , rates : Maybe (List Float)
     }
 
 
@@ -113,10 +115,13 @@ update msg state =
                         probas =
                             fixProbabilities <| computeProbabilities newCounts
                     in
-                    ( Loaded (LoadedState probas), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
+                    ( Loaded (LoadedState probas Nothing), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
 
         ( GotApiResponse (Err resp), Loading loadingState ) ->
             ( Loading { loadingState | errorMsg = Just "Error!" }, Cmd.none )
+
+        ( GotSolution rates, Loaded loadedState ) ->
+            ( Loaded { loadedState | rates = Just rates }, Cmd.none )
 
         _ ->
             ( state, Cmd.none )
@@ -136,11 +141,45 @@ viewLoading state =
         ]
 
 
+viewRates rates =
+    let
+        headersRow =
+            levelNames
+                |> List.take 8
+                |> List.map ((++) "Review/lesson at " >> Html.text >> List.singleton >> Html.th [])
+                |> Html.tr []
+
+        ratesRow =
+            List.map (format 2 >> Html.text >> List.singleton >> Html.td []) rates
+                |> Html.tr []
+    in
+    Html.table
+        []
+        [ headersRow, ratesRow ]
+
+
+viewRatesTotals rates =
+    Html.table
+        []
+        [ Html.tr []
+            [ Html.th [] [ Html.text "Reviews/lesson apprentice" ]
+            , Html.th [] [ Html.text "Reviews/lesson total" ]
+            ]
+        , Html.tr []
+            [ Html.td [] [ rates |> List.take 4 |> List.sum |> format 2 |> Html.text ]
+            , Html.td [] [ rates |> List.sum |> format 2 |> Html.text ]
+            ]
+        ]
+
+
 viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     Html.div
         []
-        [ viewProbas state.probas ]
+        [ viewProbas state.probas
+        , Maybe.map viewRates state.rates |> Maybe.withDefault (Html.text "")
+        , Maybe.map viewRatesTotals state.rates |> Maybe.withDefault (Html.text "")
+        ]
 
 
 viewProbaHeaders =
@@ -151,8 +190,18 @@ viewProbaHeaders =
         |> Html.tr []
 
 
+format : Int -> Float -> String
+format n f =
+    let
+        n2 =
+            toFloat n
+    in
+    f * (10.0 ^ n2) |> round |> toFloat |> (\x -> x / 10.0 ^ n2) |> String.fromFloat
+
+
+toPercentage : Float -> String
 toPercentage f =
-    f * 100 * 100 |> round |> toFloat |> flip (/) 100.0 |> String.fromFloat |> flip (++) "%"
+    f * 100.0 |> format 2 |> flip (++) "%"
 
 
 viewProbaRow probas row =
@@ -180,7 +229,12 @@ view state =
 
 
 subscriptions state =
-    Sub.none
+    case state of
+        Loaded st ->
+            Matrix.solution GotSolution
+
+        _ ->
+            Sub.none
 
 
 pagesDecoder =
