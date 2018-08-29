@@ -67,6 +67,19 @@ type alias ApiResponse a =
     }
 
 
+levelNames =
+    [ "apprentice 1"
+    , "apprentice 2"
+    , "apprentice 3"
+    , "apprentice 4"
+    , "guru 1"
+    , "guru 2"
+    , "master"
+    , "enlightened"
+    , "burned"
+    ]
+
+
 initState =
     { key = "f0805f70-97af-49aa-a85f-e264e3c489ec"
     , errorMsg = Nothing
@@ -126,18 +139,11 @@ viewLoaded state =
 
 
 viewProbaHeaders =
-    Html.tr []
-        [ Html.th [] [ Html.text "Start level" ]
-        , Html.th [] [ Html.text "To A1" ]
-        , Html.th [] [ Html.text "To A2" ]
-        , Html.th [] [ Html.text "To A3" ]
-        , Html.th [] [ Html.text "To A4" ]
-        , Html.th [] [ Html.text "To G1" ]
-        , Html.th [] [ Html.text "To G2" ]
-        , Html.th [] [ Html.text "To M" ]
-        , Html.th [] [ Html.text "To E" ]
-        , Html.th [] [ Html.text "To Burned" ]
-        ]
+    levelNames
+        |> List.map ((++) "To ")
+        |> (::) ""
+        |> List.map (Html.text >> List.singleton >> Html.th [])
+        |> Html.tr []
 
 
 toPercentage f =
@@ -148,7 +154,7 @@ viewProbaRow probas row =
     List.range 1 9
         |> List.map (\dest -> Dict.get ( row, dest ) probas)
         |> List.map (Maybe.map toPercentage >> Maybe.withDefault "" >> Html.text >> List.singleton >> Html.td [])
-        |> (::) (Html.td [] [ row |> String.fromInt |> Html.text ])
+        |> (::) (Html.th [] [ List.drop (row - 1) levelNames |> List.head |> Maybe.withDefault "" |> (++) "From " |> Html.text ])
         |> Html.tr []
 
 
