@@ -9,6 +9,10 @@ import Http
 import Json.Decode as D
 
 
+flip f x y =
+    f y x
+
+
 type Message
     = NewKey String
     | GotApiResponse (Result Http.Error (ApiResponse Review))
@@ -114,11 +118,44 @@ viewLoading state =
         ]
 
 
+viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     Html.div
         []
-        [ Html.div [] [ state.probas |> Debug.toString |> Html.text ]
+        [ viewProbas state.probas ]
+
+
+viewProbaHeaders =
+    Html.tr []
+        [ Html.th [] [ Html.text "Start level" ]
+        , Html.th [] [ Html.text "To A1" ]
+        , Html.th [] [ Html.text "To A2" ]
+        , Html.th [] [ Html.text "To A3" ]
+        , Html.th [] [ Html.text "To A4" ]
+        , Html.th [] [ Html.text "To G1" ]
+        , Html.th [] [ Html.text "To G2" ]
+        , Html.th [] [ Html.text "To M" ]
+        , Html.th [] [ Html.text "To E" ]
+        , Html.th [] [ Html.text "To Burned" ]
         ]
+
+
+toPercentage f =
+    f * 100 * 100 |> round |> toFloat |> flip (/) 100.0 |> String.fromFloat |> flip (++) "%"
+
+
+viewProbaRow probas row =
+    List.range 1 9
+        |> List.map (\dest -> Dict.get ( row, dest ) probas)
+        |> List.map (Maybe.map toPercentage >> Maybe.withDefault "" >> Html.text >> List.singleton >> Html.td [])
+        |> (::) (Html.td [] [ row |> String.fromInt |> Html.text ])
+        |> Html.tr []
+
+
+viewProbas probas =
+    Html.table
+        []
+        ([ viewProbaHeaders ] ++ (List.range 1 8 |> List.map (viewProbaRow probas)))
 
 
 view : State -> Html.Html Message
