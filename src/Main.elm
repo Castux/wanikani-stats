@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Html.Events
@@ -13,10 +14,18 @@ type Message
     | GotApiResponse (Result Http.Error (ApiResponse Review))
 
 
+type alias Counts =
+    Dict ( Int, Int ) Int
+
+
+type alias Probabilities =
+    Dict ( Int, Int ) Float
+
+
 type alias State =
     { key : String
     , errorMsg : Maybe String
-    , data : List Review
+    , counts : Counts
     }
 
 
@@ -47,7 +56,7 @@ type alias ApiResponse a =
 initState =
     { key = "f0805f70-97af-49aa-a85f-e264e3c489ec"
     , errorMsg = Nothing
-    , data = []
+    , counts = emptyCounts
     }
 
 
@@ -71,7 +80,7 @@ update msg state =
                         Nothing ->
                             Cmd.none
             in
-            ( { state | data = state.data ++ resp.data }, cmd )
+            ( { state | counts = List.foldr countReview state.counts resp.data }, cmd )
 
         GotApiResponse (Err resp) ->
             ( { state | errorMsg = Just (Debug.toString resp) }, Cmd.none )
@@ -86,7 +95,8 @@ view state =
             , Html.Events.onInput NewKey
             ]
             []
-        , Html.div [] [ state.data |> List.length |> String.fromInt |> Html.text ]
+        , Html.div [] [ state.counts |> Debug.toString |> Html.text ]
+        , Html.div [] [ state.counts |> computeProbabilities |> Debug.toString |> Html.text ]
         , Html.div [] [ state.errorMsg |> Maybe.withDefault "" |> Html.text ]
         ]
 
@@ -129,6 +139,42 @@ getStats key url =
                 }
     in
     Http.send GotApiResponse request
+
+
+emptyCounts =
+    Dict.empty
+
+
+countReview review counts =
+    Dict.update
+        ( review.startSrs, review.endSrs )
+        (Maybe.withDefault 0 >> (+) 1 >> Just)
+        counts
+
+
+computeProbabilities : Counts -> Probabilities
+computeProbabilities counts =
+    let
+        add : ( Int, Int ) -> Int -> Dict Int Int -> Dict Int Int
+        add ( start, end ) amount acc =
+            Dict.update
+                start
+                (Maybe.withDefault 0 >> (+) amount >> Just)
+                acc
+
+        totals =
+            Dict.foldr add Dict.empty counts
+    in
+    Dict.map
+        (\( start, end ) value ->
+            case Dict.get start totals of
+                Just total ->
+                    toFloat value / toFloat total
+
+                Nothing ->
+                    1.0
+        )
+        counts
 
 
 main =
