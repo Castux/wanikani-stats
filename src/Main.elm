@@ -22,12 +22,21 @@ type alias Probabilities =
     Dict ( Int, Int ) Float
 
 
-type alias State =
+type alias LoadingState =
     { key : String
     , errorMsg : Maybe String
-    , counts : Maybe Counts
-    , probas : Maybe Probabilities
+    , counts : Counts
     }
+
+
+type alias LoadedState =
+    { probas : Probabilities
+    }
+
+
+type State
+    = Loading LoadingState
+    | Loaded LoadedState
 
 
 type alias PagesResponse =
@@ -57,49 +66,41 @@ type alias ApiResponse a =
 initState =
     { key = "f0805f70-97af-49aa-a85f-e264e3c489ec"
     , errorMsg = Nothing
-    , counts = Just emptyCounts
-    , probas = Nothing
+    , counts = emptyCounts
     }
 
 
 init : () -> ( State, Cmd Message )
 init flags =
-    ( initState, Cmd.none )
+    ( Loading initState, Cmd.none )
 
 
 update : Message -> State -> ( State, Cmd Message )
 update msg state =
-    case msg of
-        NewKey key ->
-            ( { initState | key = key }, getStats key Nothing )
+    case ( msg, state ) of
+        ( NewKey key, _ ) ->
+            ( Loading { initState | key = key }, getStats key Nothing )
 
-        GotApiResponse (Ok resp) ->
+        ( GotApiResponse (Ok resp), Loading loadingState ) ->
             let
-                cmd =
-                    case resp.pages.nextUrl of
-                        Just nextUrl ->
-                            getStats state.key (Just nextUrl)
-
-                        Nothing ->
-                            Cmd.none
-
                 newCounts =
-                    List.foldr countReview (Maybe.withDefault Dict.empty state.counts) resp.data
-
-                total =
-                    newCounts |> Dict.values |> List.sum
+                    List.foldr countReview loadingState.counts resp.data
             in
-            if total == resp.totalCount then
-                ( { state | counts = Nothing, probas = Just (computeProbabilities newCounts) }, cmd )
+            case resp.pages.nextUrl of
+                Just nextUrl ->
+                    ( Loading { loadingState | counts = newCounts }, getStats loadingState.key (Just nextUrl) )
 
-            else
-                ( { state | counts = Just newCounts }, cmd )
+                Nothing ->
+                    ( Loaded <| LoadedState <| computeProbabilities newCounts, Cmd.none )
 
-        GotApiResponse (Err resp) ->
-            ( { state | errorMsg = Just (Debug.toString resp) }, Cmd.none )
+        ( GotApiResponse (Err resp), Loading loadingState ) ->
+            ( Loading { loadingState | errorMsg = Just (Debug.toString resp) }, Cmd.none )
+
+        _ ->
+            ( state, Cmd.none )
 
 
-view state =
+viewLoading state =
     Html.div
         []
         [ Html.input
@@ -108,20 +109,26 @@ view state =
             , Html.Events.onInput NewKey
             ]
             []
-        , case state.counts of
-            Just counts ->
-                Html.div [] [ counts |> Debug.toString |> Html.text ]
-
-            _ ->
-                Html.text ""
-        , case state.probas of
-            Just probas ->
-                Html.div [] [ probas |> Debug.toString |> Html.text ]
-
-            _ ->
-                Html.text ""
+        , Html.div [] [ state.counts |> Debug.toString |> Html.text ]
         , Html.div [] [ state.errorMsg |> Maybe.withDefault "" |> Html.text ]
         ]
+
+
+viewLoaded state =
+    Html.div
+        []
+        [ Html.div [] [ state.probas |> Debug.toString |> Html.text ]
+        ]
+
+
+view : State -> Html.Html Message
+view state =
+    case state of
+        Loading st ->
+            viewLoading st
+
+        Loaded st ->
+            viewLoaded st
 
 
 subscriptions state =
