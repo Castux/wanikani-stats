@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Dict exposing (Dict)
@@ -7,6 +7,7 @@ import Html.Attributes
 import Html.Events
 import Http
 import Json.Decode as D
+import Matrix
 
 
 flip f x y =
@@ -89,7 +90,7 @@ initState =
 
 init : () -> ( State, Cmd Message )
 init flags =
-    ( Loading initState, Cmd.none )
+    ( Loading initState, getStats initState.key Nothing )
 
 
 update : Message -> State -> ( State, Cmd Message )
@@ -105,13 +106,17 @@ update msg state =
             in
             case resp.pages.nextUrl of
                 Just nextUrl ->
-                    ( Loading { loadingState | counts = newCounts }, getStats loadingState.key (Just nextUrl) )
+                    ( Loading { loadingState | counts = newCounts, errorMsg = Nothing }, getStats loadingState.key (Just nextUrl) )
 
                 Nothing ->
-                    ( Loaded <| LoadedState <| fixProbabilities <| computeProbabilities newCounts, Cmd.none )
+                    let
+                        probas =
+                            fixProbabilities <| computeProbabilities newCounts
+                    in
+                    ( Loaded (LoadedState probas), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
 
         ( GotApiResponse (Err resp), Loading loadingState ) ->
-            ( Loading { loadingState | errorMsg = Just (Debug.toString resp) }, Cmd.none )
+            ( Loading { loadingState | errorMsg = Just "Error!" }, Cmd.none )
 
         _ ->
             ( state, Cmd.none )
@@ -126,7 +131,7 @@ viewLoading state =
             , Html.Events.onInput NewKey
             ]
             []
-        , Html.div [] [ state.counts |> Debug.toString |> Html.text ]
+        , Html.div [] [ state.counts |> Dict.values |> List.sum |> String.fromInt |> Html.text ]
         , Html.div [] [ state.errorMsg |> Maybe.withDefault "" |> Html.text ]
         ]
 

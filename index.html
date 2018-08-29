@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Wanikani Statistics</title>
+        <!--<link rel="stylesheet" href="style.css" />-->
+        <script src="main.js"></script>
+        <script src="numeric-1.2.6.min.js"></script>
+    </head>
+    <body>
+        <div id="elm"></div>
+        <script type="text/javascript">
+            var app = Elm.Main.init({
+                node: document.getElementById('elm')
+            });
+
+
+            app.ports.solve.subscribe(function(data){
+                console.log(data);
+                var inv = numeric.solve(data.a,data.b);
+                console.log(inv);
+            });
+        </script>
+    </body>
+</html>
