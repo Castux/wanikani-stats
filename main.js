@@ -770,11 +770,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.T.F === region.Y.F)
+	if (region.U.E === region.Z.E)
 	{
-		return 'on line ' + region.T.F;
+		return 'on line ' + region.U.E;
 	}
-	return 'on lines ' + region.T.F + ' through ' + region.Y.F;
+	return 'on lines ' + region.U.E + ' through ' + region.Z.E;
 }
 
 
@@ -1836,21 +1836,21 @@ var _Http_toTask = F2(function(request, maybeProgress)
 			callback(_Scheduler_fail(elm$http$Http$Timeout));
 		});
 		xhr.addEventListener('load', function() {
-			callback(_Http_handleResponse(xhr, request.aF.a));
+			callback(_Http_handleResponse(xhr, request.aG.a));
 		});
 
 		try
 		{
-			xhr.open(request.aM, request.a_, true);
+			xhr.open(request.aN, request.a$, true);
 		}
 		catch (e)
 		{
-			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a_)));
+			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a$)));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		var body = request.az;
+		var body = request.aA;
 		xhr.send(elm$http$Http$Internal$isStringBody(body)
 			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
 			: body.a
@@ -1873,23 +1873,23 @@ function _Http_configureProgress(xhr, maybeProgress)
 			return;
 		}
 		_Scheduler_rawSpawn(maybeProgress.a({
-			aA: event.loaded,
-			aB: event.total
+			aB: event.loaded,
+			aC: event.total
 		}));
 	});
 }
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.aI; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.aJ; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
 
-	xhr.responseType = request.aF.b;
-	xhr.withCredentials = request.a0;
+	xhr.responseType = request.aG.b;
+	xhr.withCredentials = request.a1;
 
-	elm$core$Maybe$isJust(request.aW) && (xhr.timeout = request.aW.a);
+	elm$core$Maybe$isJust(request.aX) && (xhr.timeout = request.aX.a);
 }
 
 
@@ -1921,10 +1921,10 @@ function _Http_handleResponse(xhr, responseToResult)
 function _Http_toResponse(xhr)
 {
 	return {
-		a_: xhr.responseURL,
-		aU: { aD: xhr.status, k: xhr.statusText },
-		aI: _Http_parseHeaders(xhr.getAllResponseHeaders()),
-		az: xhr.response
+		a$: xhr.responseURL,
+		aV: { aE: xhr.status, k: xhr.statusText },
+		aJ: _Http_parseHeaders(xhr.getAllResponseHeaders()),
+		aA: xhr.response
 	};
 }
 
@@ -2023,9 +2023,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aL,
-		impl.aZ,
-		impl.aV,
+		impl.aM,
+		impl.a_,
+		impl.aW,
 		function() { return function() {} }
 	);
 });
@@ -2826,7 +2826,7 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		k: func(record.k),
-		U: record.U,
+		V: record.V,
 		S: record.S
 	}
 });
@@ -3096,7 +3096,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.k;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.U;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.V;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
 			(tag == 2 ? value.b : tag == 3 && value.S) && event.preventDefault(),
@@ -4045,11 +4045,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aL,
-		impl.aZ,
-		impl.aV,
+		impl.aM,
+		impl.a_,
+		impl.aW,
 		function(sendToApp, initialModel) {
-			var view = impl.a$;
+			var view = impl.a0;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4081,12 +4081,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aL,
-		impl.aZ,
-		impl.aV,
+		impl.aM,
+		impl.a_,
+		impl.aW,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.G && impl.G(sendToApp)
-			var view = impl.a$;
+			var divertHrefToApp = impl.F && impl.F(sendToApp)
+			var view = impl.a0;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4094,12 +4094,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.az);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aA);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aX) && (_VirtualDom_doc.title = title = doc.aX);
+				(title !== doc.aY) && (_VirtualDom_doc.title = title = doc.aY);
 			});
 		}
 	);
@@ -4150,12 +4150,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aO;
-	var onUrlRequest = impl.aP;
+	var onUrlChange = impl.aP;
+	var onUrlRequest = impl.aQ;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		G: function(sendToApp)
+		F: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4171,9 +4171,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.am === next.am
-							&& curr.ab === next.ab
-							&& curr.ai.a === next.ai.a
+							&& curr.an === next.an
+							&& curr.ac === next.ac
+							&& curr.aj.a === next.aj.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4181,13 +4181,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aL: function(flags)
+		aM: function(flags)
 		{
-			return A3(impl.aL, flags, _Browser_getUrl(), key);
+			return A3(impl.aM, flags, _Browser_getUrl(), key);
 		},
-		a$: impl.a$,
-		aZ: impl.aZ,
-		aV: impl.aV
+		a0: impl.a0,
+		a_: impl.a_,
+		aW: impl.aW
 	});
 }
 
@@ -4253,17 +4253,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aJ: 'hidden', B: 'visibilitychange' }
+		? { aK: 'hidden', B: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aJ: 'mozHidden', B: 'mozvisibilitychange' }
+		? { aK: 'mozHidden', B: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aJ: 'msHidden', B: 'msvisibilitychange' }
+		? { aK: 'msHidden', B: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aJ: 'webkitHidden', B: 'webkitvisibilitychange' }
-		: { aJ: 'hidden', B: 'visibilitychange' };
+		? { aK: 'webkitHidden', B: 'webkitvisibilitychange' }
+		: { aK: 'hidden', B: 'visibilitychange' };
 }
 
 
@@ -4344,10 +4344,10 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aq: _Browser_getScene(),
-		au: {
-			N: _Browser_window.pageXOffset,
-			O: _Browser_window.pageYOffset,
+		ar: _Browser_getScene(),
+		av: {
+			M: _Browser_window.pageXOffset,
+			N: _Browser_window.pageYOffset,
 			z: _Browser_doc.documentElement.clientWidth,
 			t: _Browser_doc.documentElement.clientHeight
 		}
@@ -4383,13 +4383,13 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aq: {
+			ar: {
 				z: node.scrollWidth,
 				t: node.scrollHeight
 			},
-			au: {
-				N: node.scrollLeft,
-				O: node.scrollTop,
+			av: {
+				M: node.scrollLeft,
+				N: node.scrollTop,
 				z: node.clientWidth,
 				t: node.clientHeight
 			}
@@ -4421,16 +4421,16 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aq: _Browser_getScene(),
-			au: {
-				N: x,
-				O: y,
+			ar: _Browser_getScene(),
+			av: {
+				M: x,
+				N: y,
 				z: _Browser_doc.documentElement.clientWidth,
 				t: _Browser_doc.documentElement.clientHeight
 			},
-			aE: {
-				N: x + rect.left,
-				O: y + rect.top,
+			aF: {
+				M: x + rect.left,
+				N: y + rect.top,
 				z: rect.width,
 				t: rect.height
 			}
@@ -4475,11 +4475,11 @@ var author$project$Main$GotApiResponse = function (a) {
 };
 var author$project$Main$ApiResponse = F3(
 	function (totalCount, pages, data) {
-		return {P: data, af: pages, aY: totalCount};
+		return {O: data, ag: pages, aZ: totalCount};
 	});
 var author$project$Main$PagesResponse = F3(
 	function (nextUrl, previousUrl, perPage) {
-		return {ad: nextUrl, aR: perPage, aS: previousUrl};
+		return {ae: nextUrl, aS: perPage, aT: previousUrl};
 	});
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
@@ -4985,7 +4985,7 @@ var author$project$Main$pagesDecoder = A4(
 	A2(elm$json$Json$Decode$field, 'per_page', elm$json$Json$Decode$int));
 var author$project$Main$Review = F2(
 	function (startSrs, endSrs) {
-		return {Z: endSrs, ar: startSrs};
+		return {_: endSrs, as: startSrs};
 	});
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
@@ -5641,7 +5641,7 @@ var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var elm$http$Http$expectJson = function (decoder) {
 	return elm$http$Http$expectStringResponse(
 		function (response) {
-			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.az);
+			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.aA);
 			if (_n0.$ === 1) {
 				var decodeError = _n0.a;
 				return elm$core$Result$Err(
@@ -5784,16 +5784,16 @@ var author$project$Main$getStats = F2(
 	function (key, url) {
 		var request = elm$http$Http$request(
 			{
-				az: elm$http$Http$emptyBody,
-				aF: elm$http$Http$expectJson(author$project$Main$jsonDecoder),
-				aI: _List_fromArray(
+				aA: elm$http$Http$emptyBody,
+				aG: elm$http$Http$expectJson(author$project$Main$jsonDecoder),
+				aJ: _List_fromArray(
 					[
 						A2(elm$http$Http$header, 'Authorization', 'Bearer ' + key)
 					]),
-				aM: 'GET',
-				aW: elm$core$Maybe$Nothing,
-				a_: A2(elm$core$Maybe$withDefault, 'https://api.wanikani.com/v2/reviews', url),
-				a0: false
+				aN: 'GET',
+				aX: elm$core$Maybe$Nothing,
+				a$: A2(elm$core$Maybe$withDefault, 'https://api.wanikani.com/v2/reviews', url),
+				a1: false
 			});
 		return A2(elm$http$Http$send, author$project$Main$GotApiResponse, request);
 	});
@@ -5824,9 +5824,9 @@ var author$project$Main$subscriptions = function (state) {
 var author$project$Main$Loaded = function (a) {
 	return {$: 1, a: a};
 };
-var author$project$Main$LoadedState = F3(
-	function (probas, rates, lessonRate) {
-		return {E: lessonRate, aj: probas, q: rates};
+var author$project$Main$LoadedState = F4(
+	function (probas, rates, lessonRate, lessonRateString) {
+		return {o: lessonRate, P: lessonRateString, ak: probas, T: rates};
 	});
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5890,7 +5890,7 @@ var author$project$Main$countReview = F2(
 	function (review, counts) {
 		return A3(
 			elm$core$Dict$update,
-			_Utils_Tuple2(review.ar, review.Z),
+			_Utils_Tuple2(review.as, review._),
 			A2(
 				elm$core$Basics$composeR,
 				elm$core$Maybe$withDefault(0),
@@ -5978,18 +5978,19 @@ var author$project$Matrix$solve = _Platform_outgoingPort(
 					_Utils_Tuple2(
 					'a',
 					elm$json$Json$Encode$list(
-						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.aw)),
+						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.ax)),
 					_Utils_Tuple2(
 					'b',
-					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.ay))
+					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.az))
 				]));
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$core$String$toFloat = _String_toFloat;
 var author$project$Main$update = F2(
 	function (msg, state) {
 		var _n0 = _Utils_Tuple2(msg, state);
-		_n0$4:
+		_n0$5:
 		while (true) {
 			switch (_n0.a.$) {
 				case 0:
@@ -6005,8 +6006,8 @@ var author$project$Main$update = F2(
 						if (!_n0.b.$) {
 							var resp = _n0.a.a.a;
 							var loadingState = _n0.b.a;
-							var newCounts = A3(elm$core$List$foldr, author$project$Main$countReview, loadingState.C, resp.P);
-							var _n1 = resp.af.ad;
+							var newCounts = A3(elm$core$List$foldr, author$project$Main$countReview, loadingState.C, resp.O);
+							var _n1 = resp.ag.ae;
 							if (!_n1.$) {
 								var nextUrl = _n1.a;
 								return _Utils_Tuple2(
@@ -6023,16 +6024,16 @@ var author$project$Main$update = F2(
 									author$project$Main$computeProbabilities(newCounts));
 								return _Utils_Tuple2(
 									author$project$Main$Loaded(
-										A3(author$project$Main$LoadedState, probas, elm$core$Maybe$Nothing, 1.0)),
+										A4(author$project$Main$LoadedState, probas, elm$core$Maybe$Nothing, 1.0, '1')),
 									author$project$Matrix$solve(
 										{
-											aw: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
-											ay: _List_fromArray(
+											ax: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
+											az: _List_fromArray(
 												[-1.0, 0, 0, 0, 0, 0, 0, 0])
 										}));
 							}
 						} else {
-							break _n0$4;
+							break _n0$5;
 						}
 					} else {
 						if (!_n0.b.$) {
@@ -6047,10 +6048,10 @@ var author$project$Main$update = F2(
 										})),
 								elm$core$Platform$Cmd$none);
 						} else {
-							break _n0$4;
+							break _n0$5;
 						}
 					}
-				default:
+				case 2:
 					if (_n0.b.$ === 1) {
 						var rates = _n0.a.a;
 						var loadedState = _n0.b.a;
@@ -6059,16 +6060,36 @@ var author$project$Main$update = F2(
 								_Utils_update(
 									loadedState,
 									{
-										q: elm$core$Maybe$Just(rates)
+										T: elm$core$Maybe$Just(rates)
 									})),
 							elm$core$Platform$Cmd$none);
 					} else {
-						break _n0$4;
+						break _n0$5;
+					}
+				default:
+					if (_n0.b.$ === 1) {
+						var rateStr = _n0.a.a;
+						var loadedState = _n0.b.a;
+						var newRate = A2(
+							elm$core$Maybe$withDefault,
+							loadedState.o,
+							elm$core$String$toFloat(rateStr));
+						return _Utils_Tuple2(
+							author$project$Main$Loaded(
+								_Utils_update(
+									loadedState,
+									{o: newRate, P: rateStr})),
+							elm$core$Platform$Cmd$none);
+					} else {
+						break _n0$5;
 					}
 			}
 		}
 		return _Utils_Tuple2(state, elm$core$Platform$Cmd$none);
 	});
+var author$project$Main$NewLessonRate = function (a) {
+	return {$: 3, a: a};
+};
 var author$project$Main$flip = F3(
 	function (f, x, y) {
 		return A2(f, y, x);
@@ -6433,17 +6454,11 @@ var author$project$Main$viewQueueSizes = F2(
 				elm$core$List$map,
 				A2(
 					elm$core$Basics$composeR,
-					elm$core$Basics$append('Average '),
+					elm$html$Html$text,
 					A2(
 						elm$core$Basics$composeR,
-						A2(author$project$Main$flip, elm$core$Basics$append, ' items'),
-						A2(
-							elm$core$Basics$composeR,
-							elm$html$Html$text,
-							A2(
-								elm$core$Basics$composeR,
-								elm$core$List$singleton,
-								elm$html$Html$th(_List_Nil))))),
+						elm$core$List$singleton,
+						elm$html$Html$th(_List_Nil))),
 				A2(elm$core$List$take, 8, author$project$Main$levelNames)));
 		return A2(
 			elm$html$Html$table,
@@ -6541,14 +6556,11 @@ var author$project$Main$viewRates = F2(
 				elm$core$List$map,
 				A2(
 					elm$core$Basics$composeR,
-					elm$core$Basics$append('Review/lesson at '),
+					elm$html$Html$text,
 					A2(
 						elm$core$Basics$composeR,
-						elm$html$Html$text,
-						A2(
-							elm$core$Basics$composeR,
-							elm$core$List$singleton,
-							elm$html$Html$th(_List_Nil)))),
+						elm$core$List$singleton,
+						elm$html$Html$th(_List_Nil))),
 				A2(elm$core$List$take, 8, author$project$Main$levelNames)));
 		return A2(
 			elm$html$Html$table,
@@ -6573,14 +6585,14 @@ var author$project$Main$viewRatesTotals = F2(
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('Reviews/lesson all apprentice levels')
+									elm$html$Html$text('Apprentice reviews/day')
 								])),
 							A2(
 							elm$html$Html$th,
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('Reviews/lesson total')
+									elm$html$Html$text('Total reviews/day')
 								]))
 						])),
 					A2(
@@ -6616,105 +6628,8 @@ var author$project$Main$viewRatesTotals = F2(
 	});
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
-var elm$html$Html$p = _VirtualDom_node('p');
-var author$project$Main$viewLoaded = function (state) {
-	return A2(
-		elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Accuracy')
-					])),
-				author$project$Main$viewProbas(state.aj),
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Computed review rates to keep up with the lessons')
-					])),
-				A2(
-				elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Relative to lesson rate. Also equal to the average number of reviews done for each level, for a single item.')
-					])),
-				A2(
-				elm$core$Maybe$withDefault,
-				elm$html$Html$text(''),
-				A2(
-					elm$core$Maybe$map,
-					function (r) {
-						return A2(author$project$Main$viewRates, r, state.E);
-					},
-					state.q)),
-				A2(
-				elm$core$Maybe$withDefault,
-				elm$html$Html$text(''),
-				A2(
-					elm$core$Maybe$map,
-					function (r) {
-						return A2(author$project$Main$viewRatesTotals, r, state.E);
-					},
-					state.q)),
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Average queue sizes')
-					])),
-				A2(
-				elm$core$Maybe$withDefault,
-				elm$html$Html$text(''),
-				A2(
-					elm$core$Maybe$map,
-					function (r) {
-						return A2(author$project$Main$viewQueueSizes, r, state.E);
-					},
-					state.q)),
-				A2(
-				elm$core$Maybe$withDefault,
-				elm$html$Html$text(''),
-				A2(
-					elm$core$Maybe$map,
-					function (r) {
-						return A2(author$project$Main$viewQueueSizesTotals, r, state.E);
-					},
-					state.q)),
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Time to burn')
-					])),
-				A2(
-				elm$core$Maybe$withDefault,
-				elm$html$Html$text(''),
-				A2(elm$core$Maybe$map, author$project$Main$viewBurnTime, state.q))
-			]));
-};
-var author$project$Main$NewKey = function (a) {
-	return {$: 0, a: a};
-};
-var elm$core$Dict$values = function (dict) {
-	return A3(
-		elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2(elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
 var elm$html$Html$input = _VirtualDom_node('input');
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6752,6 +6667,96 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			elm$json$Json$Decode$map,
 			elm$html$Html$Events$alwaysStop,
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+};
+var author$project$Main$viewLoaded = function (state) {
+	var ifComputed = function () {
+		var _n0 = state.T;
+		if (!_n0.$) {
+			var rates = _n0.a;
+			return _List_fromArray(
+				[
+					A2(
+					elm$html$Html$h1,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Reviews per day')
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('(to keep up with the lessons)')
+						])),
+					A2(author$project$Main$viewRates, rates, state.o),
+					A2(author$project$Main$viewRatesTotals, rates, state.o),
+					A2(
+					elm$html$Html$h1,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Average number of non burned items')
+						])),
+					A2(author$project$Main$viewQueueSizes, rates, state.o),
+					A2(author$project$Main$viewQueueSizesTotals, rates, state.o),
+					A2(
+					elm$html$Html$h1,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Time to burn')
+						])),
+					author$project$Main$viewBurnTime(rates)
+				]);
+		} else {
+			return _List_Nil;
+		}
+	}();
+	var alwaysThere = _List_fromArray(
+		[
+			A2(
+			elm$html$Html$h1,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Accuracy')
+				])),
+			author$project$Main$viewProbas(state.ak),
+			A2(
+			elm$html$Html$h1,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Lessons per day')
+				])),
+			A2(
+			elm$html$Html$input,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$placeholder('Lessons per day'),
+					elm$html$Html$Attributes$value(state.P),
+					elm$html$Html$Events$onInput(author$project$Main$NewLessonRate)
+				]),
+			_List_Nil)
+		]);
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_Utils_ap(alwaysThere, ifComputed));
+};
+var author$project$Main$NewKey = function (a) {
+	return {$: 0, a: a};
+};
+var elm$core$Dict$values = function (dict) {
+	return A3(
+		elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
 };
 var author$project$Main$viewLoading = function (state) {
 	return A2(
@@ -6843,7 +6848,7 @@ var elm$core$String$contains = _String_contains;
 var elm$core$String$toInt = _String_toInt;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {aa: fragment, ab: host, ag: path, ai: port_, am: protocol, an: query};
+		return {ab: fragment, ac: host, ah: path, aj: port_, an: protocol, ao: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -6949,6 +6954,6 @@ var elm$url$Url$fromString = function (str) {
 };
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Main$main = elm$browser$Browser$element(
-	{aL: author$project$Main$init, aV: author$project$Main$subscriptions, aZ: author$project$Main$update, a$: author$project$Main$view});
+	{aM: author$project$Main$init, aW: author$project$Main$subscriptions, a_: author$project$Main$update, a0: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(
 	elm$json$Json$Decode$succeed(0))(0)}});}(this));
