@@ -6131,14 +6131,12 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
+var elm$html$Html$b = _VirtualDom_node('b');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h2 = _VirtualDom_node('h2');
-var elm$html$Html$table = _VirtualDom_node('table');
-var elm$html$Html$td = _VirtualDom_node('td');
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$html$Html$th = _VirtualDom_node('th');
-var elm$html$Html$tr = _VirtualDom_node('tr');
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6167,44 +6165,23 @@ var author$project$Main$viewBurnTime = function (rates) {
 						elm$html$Html$text('Time to burn')
 					])),
 				A2(
-				elm$html$Html$table,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('small-table')
-					]),
+				elm$html$Html$p,
+				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
-						elm$html$Html$tr,
+						elm$html$Html$b,
 						_List_Nil,
 						_List_fromArray(
 							[
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('Average burn time')
-									]))
+								elm$html$Html$text('Average burn time: ')
 							])),
-						A2(
-						elm$html$Html$tr,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$td,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text(
-										A3(
-											author$project$Main$flip,
-											elm$core$Basics$append,
-											' days',
-											A2(author$project$Main$format, 2, totalSize)))
-									]))
-							]))
+						elm$html$Html$text(
+						A3(
+							author$project$Main$flip,
+							elm$core$Basics$append,
+							' days',
+							A2(author$project$Main$format, 2, totalSize)))
 					]))
 			]));
 };
@@ -6214,6 +6191,8 @@ var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
+var elm$html$Html$th = _VirtualDom_node('th');
+var elm$html$Html$tr = _VirtualDom_node('tr');
 var author$project$Main$viewProbaHeaders = A2(
 	elm$html$Html$tr,
 	_List_Nil,
@@ -6280,6 +6259,7 @@ var elm$core$Maybe$map = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
+var elm$html$Html$td = _VirtualDom_node('td');
 var author$project$Main$viewProbaRow = F2(
 	function (probas, row) {
 		return A2(
@@ -6324,6 +6304,7 @@ var author$project$Main$viewProbaRow = F2(
 						},
 						A2(elm$core$List$range, 1, 9)))));
 	});
+var elm$html$Html$table = _VirtualDom_node('table');
 var author$project$Main$viewProbas = function (probas) {
 	return A2(
 		elm$html$Html$table,
@@ -6518,66 +6499,44 @@ var author$project$Main$viewQueueSizes = F2(
 					_List_fromArray(
 						[headersRow, queuesRow])),
 					A2(
-					elm$html$Html$table,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('small-table')
-						]),
+					elm$html$Html$p,
+					_List_Nil,
 					_List_fromArray(
 						[
 							A2(
-							elm$html$Html$tr,
+							elm$html$Html$b,
 							_List_Nil,
 							_List_fromArray(
 								[
-									A2(
-									elm$html$Html$th,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text('Average apprentice items')
-										])),
-									A2(
-									elm$html$Html$th,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text('Average items')
-										]))
+									elm$html$Html$text('Average apprentice items: ')
 								])),
+							elm$html$Html$text(
 							A2(
-							elm$html$Html$tr,
+								author$project$Main$format,
+								2,
+								elm$core$List$sum(
+									A2(elm$core$List$take, 4, sizes))))
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$b,
 							_List_Nil,
 							_List_fromArray(
 								[
-									A2(
-									elm$html$Html$td,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text(
-											A2(
-												author$project$Main$format,
-												2,
-												elm$core$List$sum(
-													A2(elm$core$List$take, 4, sizes))))
-										])),
-									A2(
-									elm$html$Html$td,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text(
-											A2(
-												author$project$Main$format,
-												2,
-												elm$core$List$sum(sizes)))
-										]))
-								]))
+									elm$html$Html$text('Average items: ')
+								])),
+							elm$html$Html$text(
+							A2(
+								author$project$Main$format,
+								2,
+								elm$core$List$sum(sizes)))
 						]))
 				]));
 	});
-var elm$html$Html$p = _VirtualDom_node('p');
 var author$project$Main$viewRates = F2(
 	function (rates, lessonRate) {
 		var ratesRow = A2(
@@ -6640,62 +6599,41 @@ var author$project$Main$viewRates = F2(
 					_List_fromArray(
 						[headersRow, ratesRow])),
 					A2(
-					elm$html$Html$table,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('small-table')
-						]),
+					elm$html$Html$p,
+					_List_Nil,
 					_List_fromArray(
 						[
 							A2(
-							elm$html$Html$tr,
+							elm$html$Html$b,
 							_List_Nil,
 							_List_fromArray(
 								[
-									A2(
-									elm$html$Html$th,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text('Apprentice')
-										])),
-									A2(
-									elm$html$Html$th,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text('Total')
-										]))
+									elm$html$Html$text('Apprentice: ')
 								])),
+							elm$html$Html$text(
 							A2(
-							elm$html$Html$tr,
+								author$project$Main$format,
+								2,
+								lessonRate * elm$core$List$sum(
+									A2(elm$core$List$take, 4, rates))))
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$b,
 							_List_Nil,
 							_List_fromArray(
 								[
-									A2(
-									elm$html$Html$td,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text(
-											A2(
-												author$project$Main$format,
-												2,
-												lessonRate * elm$core$List$sum(
-													A2(elm$core$List$take, 4, rates))))
-										])),
-									A2(
-									elm$html$Html$td,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text(
-											A2(
-												author$project$Main$format,
-												2,
-												lessonRate * elm$core$List$sum(rates)))
-										]))
-								]))
+									elm$html$Html$text('Total: ')
+								])),
+							elm$html$Html$text(
+							A2(
+								author$project$Main$format,
+								2,
+								lessonRate * elm$core$List$sum(rates)))
 						]))
 				]));
 	});

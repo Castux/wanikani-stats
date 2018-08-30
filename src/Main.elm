@@ -208,16 +208,15 @@ viewRates rates lessonRate =
         , Html.table
             []
             [ headersRow, ratesRow ]
-        , Html.table
-            [ Html.Attributes.class "small-table" ]
-            [ Html.tr []
-                [ Html.th [] [ Html.text "Apprentice" ]
-                , Html.th [] [ Html.text "Total" ]
-                ]
-            , Html.tr []
-                [ Html.td [] [ rates |> List.take 4 |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
-                , Html.td [] [ rates |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
-                ]
+        , Html.p
+            []
+            [ Html.b [] [ Html.text "Apprentice: " ]
+            , rates |> List.take 4 |> List.sum |> (*) lessonRate |> format 2 |> Html.text
+            ]
+        , Html.p
+            []
+            [ Html.b [] [ Html.text "Total: " ]
+            , rates |> List.sum |> (*) lessonRate |> format 2 |> Html.text
             ]
         ]
 
@@ -244,16 +243,15 @@ viewQueueSizes rates lessonRate =
         , Html.table
             []
             [ headersRow, queuesRow ]
-        , Html.table
-            [ Html.Attributes.class "small-table" ]
-            [ Html.tr []
-                [ Html.th [] [ Html.text "Average apprentice items" ]
-                , Html.th [] [ Html.text "Average items" ]
-                ]
-            , Html.tr []
-                [ Html.td [] [ sizes |> List.take 4 |> List.sum |> format 2 |> Html.text ]
-                , Html.td [] [ sizes |> List.sum |> format 2 |> Html.text ]
-                ]
+        , Html.p
+            []
+            [ Html.b [] [ Html.text "Average apprentice items: " ]
+            , sizes |> List.take 4 |> List.sum |> format 2 |> Html.text
+            ]
+        , Html.p
+            []
+            [ Html.b [] [ Html.text "Average items: " ]
+            , sizes |> List.sum |> format 2 |> Html.text
             ]
         ]
 
@@ -266,14 +264,10 @@ viewBurnTime rates =
     Html.div
         [ Html.Attributes.class "box" ]
         [ Html.h2 [] [ Html.text "Time to burn" ]
-        , Html.table
-            [ Html.Attributes.class "small-table" ]
-            [ Html.tr []
-                [ Html.th [] [ Html.text "Average burn time" ]
-                ]
-            , Html.tr []
-                [ Html.td [] [ totalSize |> format 2 |> flip (++) " days" |> Html.text ]
-                ]
+        , Html.p
+            []
+            [ Html.b [] [ Html.text "Average burn time: " ]
+            , totalSize |> format 2 |> flip (++) " days" |> Html.text
             ]
         ]
 
