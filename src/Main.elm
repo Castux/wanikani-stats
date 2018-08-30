@@ -31,7 +31,7 @@ type alias Probabilities =
 
 type alias LoadingState =
     { key : String
-    , errorMsg : Maybe String
+    , message : Maybe String
     , counts : Counts
     }
 
@@ -99,22 +99,22 @@ levelDelays =
 
 
 initState =
-    { key = "f0805f70-97af-49aa-a85f-e264e3c489ec"
-    , errorMsg = Nothing
+    { key = ""
+    , message = Nothing
     , counts = emptyCounts
     }
 
 
 init : () -> ( State, Cmd Message )
 init flags =
-    ( Loading initState, getStats initState.key Nothing )
+    ( Loading initState, Cmd.none )
 
 
 update : Message -> State -> ( State, Cmd Message )
 update msg state =
     case ( msg, state ) of
         ( NewKey key, _ ) ->
-            ( Loading { initState | key = key }, getStats key Nothing )
+            ( Loading { initState | key = key, message = Just "Loading..." }, getStats key Nothing )
 
         ( GotApiResponse (Ok resp), Loading loadingState ) ->
             let
@@ -123,7 +123,7 @@ update msg state =
             in
             case resp.pages.nextUrl of
                 Just nextUrl ->
-                    ( Loading { loadingState | counts = newCounts, errorMsg = Nothing }, getStats loadingState.key (Just nextUrl) )
+                    ( Loading { loadingState | counts = newCounts, message = Just "Loading..." }, getStats loadingState.key (Just nextUrl) )
 
                 Nothing ->
                     let
@@ -133,7 +133,7 @@ update msg state =
                     ( Loaded (LoadedState probas Nothing 1.0 "1"), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
 
         ( GotApiResponse (Err resp), Loading loadingState ) ->
-            ( Loading { loadingState | errorMsg = Just "Error!" }, Cmd.none )
+            ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
 
         ( GotSolution rates, Loaded loadedState ) ->
             ( Loaded { loadedState | rates = Just rates }, Cmd.none )
@@ -152,14 +152,23 @@ update msg state =
 viewLoading state =
     Html.div
         []
-        [ Html.input
+        [ Html.h1 [] [ Html.text "Wanikani accuracy and review rates stats" ]
+        , Html.h2 [] [ Html.text "API v2 key" ]
+        , Html.p []
+            [ Html.text "You can find it on "
+            , Html.a
+                [ Html.Attributes.href "https://www.wanikani.com/settings/account"
+                , Html.Attributes.target "_blank"
+                ]
+                [ Html.text "your profile page" ]
+            ]
+        , Html.input
             [ Html.Attributes.placeholder "API v2 key"
             , Html.Attributes.value state.key
             , Html.Events.onInput NewKey
             ]
             []
-        , Html.div [] [ state.counts |> Dict.values |> List.sum |> String.fromInt |> Html.text ]
-        , Html.div [] [ state.errorMsg |> Maybe.withDefault "" |> Html.text ]
+        , Html.div [] [ state.message |> Maybe.withDefault "" |> Html.text ]
         ]
 
 
@@ -253,9 +262,9 @@ viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     let
         alwaysThere =
-            [ Html.h1 [] [ Html.text "Accuracy" ]
+            [ Html.h2 [] [ Html.text "Accuracy" ]
             , viewProbas state.probas
-            , Html.h1 [] [ Html.text "Lessons per day" ]
+            , Html.h2 [] [ Html.text "Lessons per day" ]
             , Html.input
                 [ Html.Attributes.placeholder "Lessons per day"
                 , Html.Attributes.value state.lessonRateString
@@ -267,14 +276,14 @@ viewLoaded state =
         ifComputed =
             case state.rates of
                 Just rates ->
-                    [ Html.h1 [] [ Html.text "Reviews per day" ]
+                    [ Html.h2 [] [ Html.text "Reviews per day" ]
                     , Html.p [] [ Html.text "(to keep up with the lessons)" ]
                     , viewRates rates state.lessonRate
                     , viewRatesTotals rates state.lessonRate
-                    , Html.h1 [] [ Html.text "Average number of non burned items" ]
+                    , Html.h2 [] [ Html.text "Average number of non burned items" ]
                     , viewQueueSizes rates state.lessonRate
                     , viewQueueSizesTotals rates state.lessonRate
-                    , Html.h1 [] [ Html.text "Time to burn" ]
+                    , Html.h2 [] [ Html.text "Time to burn" ]
                     , viewBurnTime rates
                     ]
 

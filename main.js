@@ -770,11 +770,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.U.E === region.Z.E)
+	if (region.T.C === region.Y.C)
 	{
-		return 'on line ' + region.U.E;
+		return 'on line ' + region.T.C;
 	}
-	return 'on lines ' + region.U.E + ' through ' + region.Z.E;
+	return 'on lines ' + region.T.C + ' through ' + region.Y.C;
 }
 
 
@@ -1819,188 +1819,6 @@ function _Scheduler_step(proc)
 
 
 
-// SEND REQUEST
-
-var _Http_toTask = F2(function(request, maybeProgress)
-{
-	return _Scheduler_binding(function(callback)
-	{
-		var xhr = new XMLHttpRequest();
-
-		_Http_configureProgress(xhr, maybeProgress);
-
-		xhr.addEventListener('error', function() {
-			callback(_Scheduler_fail(elm$http$Http$NetworkError));
-		});
-		xhr.addEventListener('timeout', function() {
-			callback(_Scheduler_fail(elm$http$Http$Timeout));
-		});
-		xhr.addEventListener('load', function() {
-			callback(_Http_handleResponse(xhr, request.aG.a));
-		});
-
-		try
-		{
-			xhr.open(request.aN, request.a$, true);
-		}
-		catch (e)
-		{
-			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a$)));
-		}
-
-		_Http_configureRequest(xhr, request);
-
-		var body = request.aA;
-		xhr.send(elm$http$Http$Internal$isStringBody(body)
-			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
-			: body.a
-		);
-
-		return function() { xhr.abort(); };
-	});
-});
-
-function _Http_configureProgress(xhr, maybeProgress)
-{
-	if (!elm$core$Maybe$isJust(maybeProgress))
-	{
-		return;
-	}
-
-	xhr.addEventListener('progress', function(event) {
-		if (!event.lengthComputable)
-		{
-			return;
-		}
-		_Scheduler_rawSpawn(maybeProgress.a({
-			aB: event.loaded,
-			aC: event.total
-		}));
-	});
-}
-
-function _Http_configureRequest(xhr, request)
-{
-	for (var headers = request.aJ; headers.b; headers = headers.b) // WHILE_CONS
-	{
-		xhr.setRequestHeader(headers.a.a, headers.a.b);
-	}
-
-	xhr.responseType = request.aG.b;
-	xhr.withCredentials = request.a1;
-
-	elm$core$Maybe$isJust(request.aX) && (xhr.timeout = request.aX.a);
-}
-
-
-// RESPONSES
-
-function _Http_handleResponse(xhr, responseToResult)
-{
-	var response = _Http_toResponse(xhr);
-
-	if (xhr.status < 200 || 300 <= xhr.status)
-	{
-		response.body = xhr.responseText;
-		return _Scheduler_fail(elm$http$Http$BadStatus(response));
-	}
-
-	var result = responseToResult(response);
-
-	if (elm$core$Result$isOk(result))
-	{
-		return _Scheduler_succeed(result.a);
-	}
-	else
-	{
-		response.body = xhr.responseText;
-		return _Scheduler_fail(A2(elm$http$Http$BadPayload, result.a, response));
-	}
-}
-
-function _Http_toResponse(xhr)
-{
-	return {
-		a$: xhr.responseURL,
-		aV: { aE: xhr.status, k: xhr.statusText },
-		aJ: _Http_parseHeaders(xhr.getAllResponseHeaders()),
-		aA: xhr.response
-	};
-}
-
-function _Http_parseHeaders(rawHeaders)
-{
-	var headers = elm$core$Dict$empty;
-
-	if (!rawHeaders)
-	{
-		return headers;
-	}
-
-	var headerPairs = rawHeaders.split('\u000d\u000a');
-	for (var i = headerPairs.length; i--; )
-	{
-		var headerPair = headerPairs[i];
-		var index = headerPair.indexOf('\u003a\u0020');
-		if (index > 0)
-		{
-			var key = headerPair.substring(0, index);
-			var value = headerPair.substring(index + 2);
-
-			headers = A3(elm$core$Dict$update, key, function(oldValue) {
-				return elm$core$Maybe$Just(elm$core$Maybe$isJust(oldValue)
-					? value + ', ' + oldValue.a
-					: value
-				);
-			}, headers);
-		}
-	}
-
-	return headers;
-}
-
-
-// EXPECTORS
-
-function _Http_expectStringResponse(responseToResult)
-{
-	return {
-		$: 0,
-		b: 'text',
-		a: responseToResult
-	};
-}
-
-var _Http_mapExpect = F2(function(func, expect)
-{
-	return {
-		$: 0,
-		b: expect.b,
-		a: function(response) {
-			var convertedResponse = expect.a(response);
-			return A2(elm$core$Result$map, func, convertedResponse);
-		}
-	};
-});
-
-
-// BODY
-
-function _Http_multipart(parts)
-{
-
-
-	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
-	{
-		var part = parts.a;
-		formData.append(part.a, part.b);
-	}
-
-	return elm$http$Http$Internal$FormDataBody(formData);
-}
-
-
-
 function _Process_sleep(time)
 {
 	return _Scheduler_binding(function(callback) {
@@ -2023,9 +1841,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aM,
-		impl.a_,
-		impl.aW,
+		impl.aL,
+		impl.aZ,
+		impl.aV,
 		function() { return function() {} }
 	);
 });
@@ -2480,6 +2298,188 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 
 
 
+// SEND REQUEST
+
+var _Http_toTask = F2(function(request, maybeProgress)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var xhr = new XMLHttpRequest();
+
+		_Http_configureProgress(xhr, maybeProgress);
+
+		xhr.addEventListener('error', function() {
+			callback(_Scheduler_fail(elm$http$Http$NetworkError));
+		});
+		xhr.addEventListener('timeout', function() {
+			callback(_Scheduler_fail(elm$http$Http$Timeout));
+		});
+		xhr.addEventListener('load', function() {
+			callback(_Http_handleResponse(xhr, request.aF.a));
+		});
+
+		try
+		{
+			xhr.open(request.aM, request.a_, true);
+		}
+		catch (e)
+		{
+			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a_)));
+		}
+
+		_Http_configureRequest(xhr, request);
+
+		var body = request.az;
+		xhr.send(elm$http$Http$Internal$isStringBody(body)
+			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
+			: body.a
+		);
+
+		return function() { xhr.abort(); };
+	});
+});
+
+function _Http_configureProgress(xhr, maybeProgress)
+{
+	if (!elm$core$Maybe$isJust(maybeProgress))
+	{
+		return;
+	}
+
+	xhr.addEventListener('progress', function(event) {
+		if (!event.lengthComputable)
+		{
+			return;
+		}
+		_Scheduler_rawSpawn(maybeProgress.a({
+			aA: event.loaded,
+			aB: event.total
+		}));
+	});
+}
+
+function _Http_configureRequest(xhr, request)
+{
+	for (var headers = request.aI; headers.b; headers = headers.b) // WHILE_CONS
+	{
+		xhr.setRequestHeader(headers.a.a, headers.a.b);
+	}
+
+	xhr.responseType = request.aF.b;
+	xhr.withCredentials = request.a0;
+
+	elm$core$Maybe$isJust(request.aW) && (xhr.timeout = request.aW.a);
+}
+
+
+// RESPONSES
+
+function _Http_handleResponse(xhr, responseToResult)
+{
+	var response = _Http_toResponse(xhr);
+
+	if (xhr.status < 200 || 300 <= xhr.status)
+	{
+		response.body = xhr.responseText;
+		return _Scheduler_fail(elm$http$Http$BadStatus(response));
+	}
+
+	var result = responseToResult(response);
+
+	if (elm$core$Result$isOk(result))
+	{
+		return _Scheduler_succeed(result.a);
+	}
+	else
+	{
+		response.body = xhr.responseText;
+		return _Scheduler_fail(A2(elm$http$Http$BadPayload, result.a, response));
+	}
+}
+
+function _Http_toResponse(xhr)
+{
+	return {
+		a_: xhr.responseURL,
+		aU: { aD: xhr.status, t: xhr.statusText },
+		aI: _Http_parseHeaders(xhr.getAllResponseHeaders()),
+		az: xhr.response
+	};
+}
+
+function _Http_parseHeaders(rawHeaders)
+{
+	var headers = elm$core$Dict$empty;
+
+	if (!rawHeaders)
+	{
+		return headers;
+	}
+
+	var headerPairs = rawHeaders.split('\u000d\u000a');
+	for (var i = headerPairs.length; i--; )
+	{
+		var headerPair = headerPairs[i];
+		var index = headerPair.indexOf('\u003a\u0020');
+		if (index > 0)
+		{
+			var key = headerPair.substring(0, index);
+			var value = headerPair.substring(index + 2);
+
+			headers = A3(elm$core$Dict$update, key, function(oldValue) {
+				return elm$core$Maybe$Just(elm$core$Maybe$isJust(oldValue)
+					? value + ', ' + oldValue.a
+					: value
+				);
+			}, headers);
+		}
+	}
+
+	return headers;
+}
+
+
+// EXPECTORS
+
+function _Http_expectStringResponse(responseToResult)
+{
+	return {
+		$: 0,
+		b: 'text',
+		a: responseToResult
+	};
+}
+
+var _Http_mapExpect = F2(function(func, expect)
+{
+	return {
+		$: 0,
+		b: expect.b,
+		a: function(response) {
+			var convertedResponse = expect.a(response);
+			return A2(elm$core$Result$map, func, convertedResponse);
+		}
+	};
+});
+
+
+// BODY
+
+function _Http_multipart(parts)
+{
+
+
+	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
+	{
+		var part = parts.a;
+		formData.append(part.a, part.b);
+	}
+
+	return elm$http$Http$Internal$FormDataBody(formData);
+}
+
+
+
 
 // HELPERS
 
@@ -2825,9 +2825,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		k: func(record.k),
-		V: record.V,
-		S: record.S
+		t: func(record.t),
+		U: record.U,
+		R: record.R
 	}
 });
 
@@ -3095,11 +3095,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.k;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.V;
+		var message = !tag ? value : tag < 3 ? value.a : value.t;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.U;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.S) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.R) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -4045,11 +4045,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aM,
-		impl.a_,
-		impl.aW,
+		impl.aL,
+		impl.aZ,
+		impl.aV,
 		function(sendToApp, initialModel) {
-			var view = impl.a0;
+			var view = impl.a$;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4081,12 +4081,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aM,
-		impl.a_,
-		impl.aW,
+		impl.aL,
+		impl.aZ,
+		impl.aV,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.F && impl.F(sendToApp)
-			var view = impl.a0;
+			var divertHrefToApp = impl.D && impl.D(sendToApp)
+			var view = impl.a$;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4094,12 +4094,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aA);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.az);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aY) && (_VirtualDom_doc.title = title = doc.aY);
+				(title !== doc.aX) && (_VirtualDom_doc.title = title = doc.aX);
 			});
 		}
 	);
@@ -4150,12 +4150,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aP;
-	var onUrlRequest = impl.aQ;
+	var onUrlChange = impl.aO;
+	var onUrlRequest = impl.aP;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		F: function(sendToApp)
+		D: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4171,9 +4171,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.an === next.an
-							&& curr.ac === next.ac
-							&& curr.aj.a === next.aj.a
+							&& curr.am === next.am
+							&& curr.ab === next.ab
+							&& curr.ai.a === next.ai.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4181,13 +4181,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aM: function(flags)
+		aL: function(flags)
 		{
-			return A3(impl.aM, flags, _Browser_getUrl(), key);
+			return A3(impl.aL, flags, _Browser_getUrl(), key);
 		},
-		a0: impl.a0,
-		a_: impl.a_,
-		aW: impl.aW
+		a$: impl.a$,
+		aZ: impl.aZ,
+		aV: impl.aV
 	});
 }
 
@@ -4253,17 +4253,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aK: 'hidden', B: 'visibilitychange' }
+		? { aJ: 'hidden', A: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aK: 'mozHidden', B: 'mozvisibilitychange' }
+		? { aJ: 'mozHidden', A: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aK: 'msHidden', B: 'msvisibilitychange' }
+		? { aJ: 'msHidden', A: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aK: 'webkitHidden', B: 'webkitvisibilitychange' }
-		: { aK: 'hidden', B: 'visibilitychange' };
+		? { aJ: 'webkitHidden', A: 'webkitvisibilitychange' }
+		: { aJ: 'hidden', A: 'visibilitychange' };
 }
 
 
@@ -4344,12 +4344,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		ar: _Browser_getScene(),
-		av: {
-			M: _Browser_window.pageXOffset,
-			N: _Browser_window.pageYOffset,
-			z: _Browser_doc.documentElement.clientWidth,
-			t: _Browser_doc.documentElement.clientHeight
+		aq: _Browser_getScene(),
+		au: {
+			L: _Browser_window.pageXOffset,
+			M: _Browser_window.pageYOffset,
+			y: _Browser_doc.documentElement.clientWidth,
+			s: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4359,8 +4359,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		z: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		t: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		y: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		s: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4383,15 +4383,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			ar: {
-				z: node.scrollWidth,
-				t: node.scrollHeight
+			aq: {
+				y: node.scrollWidth,
+				s: node.scrollHeight
 			},
-			av: {
-				M: node.scrollLeft,
-				N: node.scrollTop,
-				z: node.clientWidth,
-				t: node.clientHeight
+			au: {
+				L: node.scrollLeft,
+				M: node.scrollTop,
+				y: node.clientWidth,
+				s: node.clientHeight
 			}
 		};
 	});
@@ -4421,18 +4421,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			ar: _Browser_getScene(),
-			av: {
-				M: x,
-				N: y,
-				z: _Browser_doc.documentElement.clientWidth,
-				t: _Browser_doc.documentElement.clientHeight
+			aq: _Browser_getScene(),
+			au: {
+				L: x,
+				M: y,
+				y: _Browser_doc.documentElement.clientWidth,
+				s: _Browser_doc.documentElement.clientHeight
 			},
-			aF: {
-				M: x + rect.left,
-				N: y + rect.top,
-				z: rect.width,
-				t: rect.height
+			aE: {
+				L: x + rect.left,
+				M: y + rect.top,
+				y: rect.width,
+				s: rect.height
 			}
 		};
 	});
@@ -4470,22 +4470,20 @@ function _Browser_load(url)
 var author$project$Main$Loading = function (a) {
 	return {$: 0, a: a};
 };
-var author$project$Main$GotApiResponse = function (a) {
-	return {$: 1, a: a};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var author$project$Main$emptyCounts = elm$core$Dict$empty;
+var elm$core$Maybe$Nothing = {$: 1};
+var author$project$Main$initState = {K: author$project$Main$emptyCounts, B: '', t: elm$core$Maybe$Nothing};
+var elm$core$Basics$False = 1;
+var elm$core$Basics$True = 0;
+var elm$core$Result$isOk = function (result) {
+	if (!result.$) {
+		return true;
+	} else {
+		return false;
+	}
 };
-var author$project$Main$ApiResponse = F3(
-	function (totalCount, pages, data) {
-		return {O: data, ag: pages, aZ: totalCount};
-	});
-var author$project$Main$PagesResponse = F3(
-	function (nextUrl, previousUrl, perPage) {
-		return {ae: nextUrl, aS: perPage, aT: previousUrl};
-	});
-var elm$core$Array$branchFactor = 32;
-var elm$core$Array$Array_elm_builtin = F4(
-	function (a, b, c, d) {
-		return {$: 0, a: a, b: b, c: c, d: d};
-	});
 var elm$core$Basics$EQ = 1;
 var elm$core$Basics$GT = 2;
 var elm$core$Basics$LT = 0;
@@ -4566,6 +4564,11 @@ var elm$core$Array$foldr = F3(
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
+var elm$core$Array$branchFactor = 32;
+var elm$core$Array$Array_elm_builtin = F4(
+	function (a, b, c, d) {
+		return {$: 0, a: a, b: b, c: c, d: d};
+	});
 var elm$core$Basics$ceiling = _Basics_ceiling;
 var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$logBase = F2(
@@ -4690,7 +4693,6 @@ var elm$core$Array$builderToArray = F2(
 				builder.c);
 		}
 	});
-var elm$core$Basics$False = 1;
 var elm$core$Basics$idiv = _Basics_idiv;
 var elm$core$Basics$lt = _Utils_lt;
 var elm$core$Elm$JsArray$initialize = _JsArray_initialize;
@@ -4736,20 +4738,11 @@ var elm$core$Array$initialize = F2(
 var elm$core$Maybe$Just = function (a) {
 	return {$: 0, a: a};
 };
-var elm$core$Maybe$Nothing = {$: 1};
 var elm$core$Result$Err = function (a) {
 	return {$: 1, a: a};
 };
 var elm$core$Result$Ok = function (a) {
 	return {$: 0, a: a};
-};
-var elm$core$Basics$True = 0;
-var elm$core$Result$isOk = function (result) {
-	if (!result.$) {
-		return true;
-	} else {
-		return false;
-	}
 };
 var elm$json$Json$Decode$Failure = F2(
 	function (a, b) {
@@ -4956,133 +4949,43 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 			}
 		}
 	});
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$int = _Json_decodeInt;
-var elm$json$Json$Decode$map3 = _Json_map3;
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$null = _Json_decodeNull;
-var elm$json$Json$Decode$oneOf = _Json_oneOf;
-var elm$json$Json$Decode$nullable = function (decoder) {
-	return elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
-				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
-			]));
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var author$project$Main$init = function (flags) {
+	return _Utils_Tuple2(
+		author$project$Main$Loading(author$project$Main$initState),
+		elm$core$Platform$Cmd$none);
 };
-var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$Main$pagesDecoder = A4(
-	elm$json$Json$Decode$map3,
-	author$project$Main$PagesResponse,
-	A2(
-		elm$json$Json$Decode$field,
-		'next_url',
-		elm$json$Json$Decode$nullable(elm$json$Json$Decode$string)),
-	A2(
-		elm$json$Json$Decode$field,
-		'previous_url',
-		elm$json$Json$Decode$nullable(elm$json$Json$Decode$string)),
-	A2(elm$json$Json$Decode$field, 'per_page', elm$json$Json$Decode$int));
-var author$project$Main$Review = F2(
-	function (startSrs, endSrs) {
-		return {_: endSrs, as: startSrs};
-	});
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
-	});
-var elm$json$Json$Decode$map2 = _Json_map2;
-var author$project$Main$reviewDecoder = A3(
-	elm$json$Json$Decode$map2,
-	author$project$Main$Review,
-	A2(
-		elm$json$Json$Decode$at,
-		_List_fromArray(
-			['data', 'starting_srs_stage']),
-		elm$json$Json$Decode$int),
-	A2(
-		elm$json$Json$Decode$at,
-		_List_fromArray(
-			['data', 'ending_srs_stage']),
-		elm$json$Json$Decode$int));
+var author$project$Main$GotSolution = function (a) {
+	return {$: 2, a: a};
+};
+var elm$json$Json$Decode$float = _Json_decodeFloat;
 var elm$json$Json$Decode$list = _Json_decodeList;
-var author$project$Main$jsonDecoder = A4(
-	elm$json$Json$Decode$map3,
-	author$project$Main$ApiResponse,
-	A2(elm$json$Json$Decode$field, 'total_count', elm$json$Json$Decode$int),
-	A2(elm$json$Json$Decode$field, 'pages', author$project$Main$pagesDecoder),
-	A2(
-		elm$json$Json$Decode$field,
-		'data',
-		elm$json$Json$Decode$list(author$project$Main$reviewDecoder)));
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
+var author$project$Matrix$solution = _Platform_incomingPort(
+	'solution',
+	elm$json$Json$Decode$list(elm$json$Json$Decode$float));
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var author$project$Main$subscriptions = function (state) {
+	if (state.$ === 1) {
+		var st = state.a;
+		return author$project$Matrix$solution(author$project$Main$GotSolution);
+	} else {
+		return elm$core$Platform$Sub$none;
+	}
+};
+var author$project$Main$Loaded = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Main$LoadedState = F4(
+	function (probas, rates, lessonRate, lessonRateString) {
+		return {n: lessonRate, O: lessonRateString, aj: probas, S: rates};
 	});
-var elm$http$Http$Internal$EmptyBody = {$: 0};
-var elm$http$Http$emptyBody = elm$http$Http$Internal$EmptyBody;
-var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
-var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5115,11 +5018,30 @@ var elm$core$Dict$get = F2(
 			}
 		}
 	});
-var elm$core$Dict$Black = 1;
 var elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: -1, a: a, b: b, c: c, d: d, e: e};
 	});
+var elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === -2) {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2(elm$core$Dict$map, func, left),
+				A2(elm$core$Dict$map, func, right));
+		}
+	});
+var elm$core$Dict$Black = 1;
 var elm$core$Dict$Red = 0;
 var elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -5596,6 +5518,231 @@ var elm$core$Dict$update = F3(
 			return A2(elm$core$Dict$remove, targetKey, dictionary);
 		}
 	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$Main$computeProbabilities = function (counts) {
+	var add = F3(
+		function (_n2, amount, acc) {
+			var start = _n2.a;
+			var end = _n2.b;
+			return A3(
+				elm$core$Dict$update,
+				start,
+				A2(
+					elm$core$Basics$composeR,
+					elm$core$Maybe$withDefault(0),
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Basics$add(amount),
+						elm$core$Maybe$Just)),
+				acc);
+		});
+	var totals = A3(elm$core$Dict$foldr, add, elm$core$Dict$empty, counts);
+	return A2(
+		elm$core$Dict$map,
+		F2(
+			function (_n0, value) {
+				var start = _n0.a;
+				var end = _n0.b;
+				var _n1 = A2(elm$core$Dict$get, start, totals);
+				if (!_n1.$) {
+					var total = _n1.a;
+					return value / total;
+				} else {
+					return 1.0;
+				}
+			}),
+		counts);
+};
+var author$project$Main$countReview = F2(
+	function (review, counts) {
+		return A3(
+			elm$core$Dict$update,
+			_Utils_Tuple2(review.ar, review.Z),
+			A2(
+				elm$core$Basics$composeR,
+				elm$core$Maybe$withDefault(0),
+				A2(
+					elm$core$Basics$composeR,
+					elm$core$Basics$add(1),
+					elm$core$Maybe$Just)),
+			counts);
+	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var author$project$Main$fixProbabilities = function (probas) {
+	var fix = F2(
+		function (index, dict) {
+			return A3(
+				elm$core$Dict$update,
+				index,
+				A2(
+					elm$core$Basics$composeL,
+					elm$core$Maybe$Just,
+					elm$core$Maybe$withDefault(1.0)),
+				dict);
+		});
+	return A3(
+		elm$core$List$foldr,
+		fix,
+		probas,
+		A2(
+			elm$core$List$map,
+			function (x) {
+				return _Utils_Tuple2(x, x + 1);
+			},
+			A2(elm$core$List$range, 1, 8)));
+};
+var author$project$Main$GotApiResponse = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Main$ApiResponse = F3(
+	function (totalCount, pages, data) {
+		return {N: data, af: pages, aY: totalCount};
+	});
+var author$project$Main$PagesResponse = F3(
+	function (nextUrl, previousUrl, perPage) {
+		return {ad: nextUrl, aR: perPage, aS: previousUrl};
+	});
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$json$Json$Decode$map3 = _Json_map3;
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$null = _Json_decodeNull;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var elm$json$Json$Decode$nullable = function (decoder) {
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				elm$json$Json$Decode$null(elm$core$Maybe$Nothing),
+				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder)
+			]));
+};
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Main$pagesDecoder = A4(
+	elm$json$Json$Decode$map3,
+	author$project$Main$PagesResponse,
+	A2(
+		elm$json$Json$Decode$field,
+		'next_url',
+		elm$json$Json$Decode$nullable(elm$json$Json$Decode$string)),
+	A2(
+		elm$json$Json$Decode$field,
+		'previous_url',
+		elm$json$Json$Decode$nullable(elm$json$Json$Decode$string)),
+	A2(elm$json$Json$Decode$field, 'per_page', elm$json$Json$Decode$int));
+var author$project$Main$Review = F2(
+	function (startSrs, endSrs) {
+		return {Z: endSrs, ar: startSrs};
+	});
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var elm$json$Json$Decode$map2 = _Json_map2;
+var author$project$Main$reviewDecoder = A3(
+	elm$json$Json$Decode$map2,
+	author$project$Main$Review,
+	A2(
+		elm$json$Json$Decode$at,
+		_List_fromArray(
+			['data', 'starting_srs_stage']),
+		elm$json$Json$Decode$int),
+	A2(
+		elm$json$Json$Decode$at,
+		_List_fromArray(
+			['data', 'ending_srs_stage']),
+		elm$json$Json$Decode$int));
+var author$project$Main$jsonDecoder = A4(
+	elm$json$Json$Decode$map3,
+	author$project$Main$ApiResponse,
+	A2(elm$json$Json$Decode$field, 'total_count', elm$json$Json$Decode$int),
+	A2(elm$json$Json$Decode$field, 'pages', author$project$Main$pagesDecoder),
+	A2(
+		elm$json$Json$Decode$field,
+		'data',
+		elm$json$Json$Decode$list(author$project$Main$reviewDecoder)));
+var elm$http$Http$Internal$EmptyBody = {$: 0};
+var elm$http$Http$emptyBody = elm$http$Http$Internal$EmptyBody;
 var elm$core$Maybe$isJust = function (maybe) {
 	if (!maybe.$) {
 		return true;
@@ -5641,7 +5788,7 @@ var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var elm$http$Http$expectJson = function (decoder) {
 	return elm$http$Http$expectStringResponse(
 		function (response) {
-			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.aA);
+			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.az);
 			if (_n0.$ === 1) {
 				var decodeError = _n0.a;
 				return elm$core$Result$Err(
@@ -5662,29 +5809,10 @@ var elm$core$Basics$identity = function (x) {
 };
 var elm$http$Http$Internal$Request = elm$core$Basics$identity;
 var elm$http$Http$request = elm$core$Basics$identity;
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var elm$core$Task$Perform = elm$core$Basics$identity;
 var elm$core$Task$andThen = _Scheduler_andThen;
 var elm$core$Task$succeed = _Scheduler_succeed;
 var elm$core$Task$init = elm$core$Task$succeed(0);
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$core$Task$map = F2(
 	function (func, taskA) {
 		return A2(
@@ -5784,145 +5912,19 @@ var author$project$Main$getStats = F2(
 	function (key, url) {
 		var request = elm$http$Http$request(
 			{
-				aA: elm$http$Http$emptyBody,
-				aG: elm$http$Http$expectJson(author$project$Main$jsonDecoder),
-				aJ: _List_fromArray(
+				az: elm$http$Http$emptyBody,
+				aF: elm$http$Http$expectJson(author$project$Main$jsonDecoder),
+				aI: _List_fromArray(
 					[
 						A2(elm$http$Http$header, 'Authorization', 'Bearer ' + key)
 					]),
-				aN: 'GET',
-				aX: elm$core$Maybe$Nothing,
-				a$: A2(elm$core$Maybe$withDefault, 'https://api.wanikani.com/v2/reviews', url),
-				a1: false
+				aM: 'GET',
+				aW: elm$core$Maybe$Nothing,
+				a_: A2(elm$core$Maybe$withDefault, 'https://api.wanikani.com/v2/reviews', url),
+				a0: false
 			});
 		return A2(elm$http$Http$send, author$project$Main$GotApiResponse, request);
 	});
-var author$project$Main$emptyCounts = elm$core$Dict$empty;
-var author$project$Main$initState = {C: author$project$Main$emptyCounts, D: elm$core$Maybe$Nothing, u: 'f0805f70-97af-49aa-a85f-e264e3c489ec'};
-var author$project$Main$init = function (flags) {
-	return _Utils_Tuple2(
-		author$project$Main$Loading(author$project$Main$initState),
-		A2(author$project$Main$getStats, author$project$Main$initState.u, elm$core$Maybe$Nothing));
-};
-var author$project$Main$GotSolution = function (a) {
-	return {$: 2, a: a};
-};
-var elm$json$Json$Decode$float = _Json_decodeFloat;
-var author$project$Matrix$solution = _Platform_incomingPort(
-	'solution',
-	elm$json$Json$Decode$list(elm$json$Json$Decode$float));
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var author$project$Main$subscriptions = function (state) {
-	if (state.$ === 1) {
-		var st = state.a;
-		return author$project$Matrix$solution(author$project$Main$GotSolution);
-	} else {
-		return elm$core$Platform$Sub$none;
-	}
-};
-var author$project$Main$Loaded = function (a) {
-	return {$: 1, a: a};
-};
-var author$project$Main$LoadedState = F4(
-	function (probas, rates, lessonRate, lessonRateString) {
-		return {o: lessonRate, P: lessonRateString, ak: probas, T: rates};
-	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === -2) {
-			return elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2(elm$core$Dict$map, func, left),
-				A2(elm$core$Dict$map, func, right));
-		}
-	});
-var author$project$Main$computeProbabilities = function (counts) {
-	var add = F3(
-		function (_n2, amount, acc) {
-			var start = _n2.a;
-			var end = _n2.b;
-			return A3(
-				elm$core$Dict$update,
-				start,
-				A2(
-					elm$core$Basics$composeR,
-					elm$core$Maybe$withDefault(0),
-					A2(
-						elm$core$Basics$composeR,
-						elm$core$Basics$add(amount),
-						elm$core$Maybe$Just)),
-				acc);
-		});
-	var totals = A3(elm$core$Dict$foldr, add, elm$core$Dict$empty, counts);
-	return A2(
-		elm$core$Dict$map,
-		F2(
-			function (_n0, value) {
-				var start = _n0.a;
-				var end = _n0.b;
-				var _n1 = A2(elm$core$Dict$get, start, totals);
-				if (!_n1.$) {
-					var total = _n1.a;
-					return value / total;
-				} else {
-					return 1.0;
-				}
-			}),
-		counts);
-};
-var author$project$Main$countReview = F2(
-	function (review, counts) {
-		return A3(
-			elm$core$Dict$update,
-			_Utils_Tuple2(review.as, review._),
-			A2(
-				elm$core$Basics$composeR,
-				elm$core$Maybe$withDefault(0),
-				A2(
-					elm$core$Basics$composeR,
-					elm$core$Basics$add(1),
-					elm$core$Maybe$Just)),
-			counts);
-	});
-var author$project$Main$fixProbabilities = function (probas) {
-	var fix = F2(
-		function (index, dict) {
-			return A3(
-				elm$core$Dict$update,
-				index,
-				A2(
-					elm$core$Basics$composeL,
-					elm$core$Maybe$Just,
-					elm$core$Maybe$withDefault(1.0)),
-				dict);
-		});
-	return A3(
-		elm$core$List$foldr,
-		fix,
-		probas,
-		A2(
-			elm$core$List$map,
-			function (x) {
-				return _Utils_Tuple2(x, x + 1);
-			},
-			A2(elm$core$List$range, 1, 8)));
-};
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -5978,14 +5980,12 @@ var author$project$Matrix$solve = _Platform_outgoingPort(
 					_Utils_Tuple2(
 					'a',
 					elm$json$Json$Encode$list(
-						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.ax)),
+						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.aw)),
 					_Utils_Tuple2(
 					'b',
-					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.az))
+					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.ay))
 				]));
 	});
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$String$toFloat = _String_toFloat;
 var author$project$Main$update = F2(
 	function (msg, state) {
@@ -5999,25 +5999,31 @@ var author$project$Main$update = F2(
 						author$project$Main$Loading(
 							_Utils_update(
 								author$project$Main$initState,
-								{u: key})),
+								{
+									B: key,
+									t: elm$core$Maybe$Just('Loading...')
+								})),
 						A2(author$project$Main$getStats, key, elm$core$Maybe$Nothing));
 				case 1:
 					if (!_n0.a.a.$) {
 						if (!_n0.b.$) {
 							var resp = _n0.a.a.a;
 							var loadingState = _n0.b.a;
-							var newCounts = A3(elm$core$List$foldr, author$project$Main$countReview, loadingState.C, resp.O);
-							var _n1 = resp.ag.ae;
+							var newCounts = A3(elm$core$List$foldr, author$project$Main$countReview, loadingState.K, resp.N);
+							var _n1 = resp.af.ad;
 							if (!_n1.$) {
 								var nextUrl = _n1.a;
 								return _Utils_Tuple2(
 									author$project$Main$Loading(
 										_Utils_update(
 											loadingState,
-											{C: newCounts, D: elm$core$Maybe$Nothing})),
+											{
+												K: newCounts,
+												t: elm$core$Maybe$Just('Loading...')
+											})),
 									A2(
 										author$project$Main$getStats,
-										loadingState.u,
+										loadingState.B,
 										elm$core$Maybe$Just(nextUrl)));
 							} else {
 								var probas = author$project$Main$fixProbabilities(
@@ -6027,8 +6033,8 @@ var author$project$Main$update = F2(
 										A4(author$project$Main$LoadedState, probas, elm$core$Maybe$Nothing, 1.0, '1')),
 									author$project$Matrix$solve(
 										{
-											ax: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
-											az: _List_fromArray(
+											aw: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
+											ay: _List_fromArray(
 												[-1.0, 0, 0, 0, 0, 0, 0, 0])
 										}));
 							}
@@ -6044,7 +6050,7 @@ var author$project$Main$update = F2(
 									_Utils_update(
 										loadingState,
 										{
-											D: elm$core$Maybe$Just('Error!')
+											t: elm$core$Maybe$Just('Error!')
 										})),
 								elm$core$Platform$Cmd$none);
 						} else {
@@ -6060,7 +6066,7 @@ var author$project$Main$update = F2(
 								_Utils_update(
 									loadedState,
 									{
-										T: elm$core$Maybe$Just(rates)
+										S: elm$core$Maybe$Just(rates)
 									})),
 							elm$core$Platform$Cmd$none);
 					} else {
@@ -6072,13 +6078,13 @@ var author$project$Main$update = F2(
 						var loadedState = _n0.b.a;
 						var newRate = A2(
 							elm$core$Maybe$withDefault,
-							loadedState.o,
+							loadedState.n,
 							elm$core$String$toFloat(rateStr));
 						return _Utils_Tuple2(
 							author$project$Main$Loaded(
 								_Utils_update(
 									loadedState,
-									{o: newRate, P: rateStr})),
+									{n: newRate, O: rateStr})),
 							elm$core$Platform$Cmd$none);
 					} else {
 						break _n0$5;
@@ -6627,7 +6633,7 @@ var author$project$Main$viewRatesTotals = F2(
 				]));
 	});
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$p = _VirtualDom_node('p');
 var elm$json$Json$Encode$string = _Json_wrap;
@@ -6670,13 +6676,13 @@ var elm$html$Html$Events$onInput = function (tagger) {
 };
 var author$project$Main$viewLoaded = function (state) {
 	var ifComputed = function () {
-		var _n0 = state.T;
+		var _n0 = state.S;
 		if (!_n0.$) {
 			var rates = _n0.a;
 			return _List_fromArray(
 				[
 					A2(
-					elm$html$Html$h1,
+					elm$html$Html$h2,
 					_List_Nil,
 					_List_fromArray(
 						[
@@ -6689,19 +6695,19 @@ var author$project$Main$viewLoaded = function (state) {
 						[
 							elm$html$Html$text('(to keep up with the lessons)')
 						])),
-					A2(author$project$Main$viewRates, rates, state.o),
-					A2(author$project$Main$viewRatesTotals, rates, state.o),
+					A2(author$project$Main$viewRates, rates, state.n),
+					A2(author$project$Main$viewRatesTotals, rates, state.n),
 					A2(
-					elm$html$Html$h1,
+					elm$html$Html$h2,
 					_List_Nil,
 					_List_fromArray(
 						[
 							elm$html$Html$text('Average number of non burned items')
 						])),
-					A2(author$project$Main$viewQueueSizes, rates, state.o),
-					A2(author$project$Main$viewQueueSizesTotals, rates, state.o),
+					A2(author$project$Main$viewQueueSizes, rates, state.n),
+					A2(author$project$Main$viewQueueSizesTotals, rates, state.n),
 					A2(
-					elm$html$Html$h1,
+					elm$html$Html$h2,
 					_List_Nil,
 					_List_fromArray(
 						[
@@ -6716,15 +6722,15 @@ var author$project$Main$viewLoaded = function (state) {
 	var alwaysThere = _List_fromArray(
 		[
 			A2(
-			elm$html$Html$h1,
+			elm$html$Html$h2,
 			_List_Nil,
 			_List_fromArray(
 				[
 					elm$html$Html$text('Accuracy')
 				])),
-			author$project$Main$viewProbas(state.ak),
+			author$project$Main$viewProbas(state.aj),
 			A2(
-			elm$html$Html$h1,
+			elm$html$Html$h2,
 			_List_Nil,
 			_List_fromArray(
 				[
@@ -6735,7 +6741,7 @@ var author$project$Main$viewLoaded = function (state) {
 			_List_fromArray(
 				[
 					elm$html$Html$Attributes$placeholder('Lessons per day'),
-					elm$html$Html$Attributes$value(state.P),
+					elm$html$Html$Attributes$value(state.O),
 					elm$html$Html$Events$onInput(author$project$Main$NewLessonRate)
 				]),
 			_List_Nil)
@@ -6748,16 +6754,15 @@ var author$project$Main$viewLoaded = function (state) {
 var author$project$Main$NewKey = function (a) {
 	return {$: 0, a: a};
 };
-var elm$core$Dict$values = function (dict) {
-	return A3(
-		elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2(elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
+var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
 };
+var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
 var author$project$Main$viewLoading = function (state) {
 	return A2(
 		elm$html$Html$div,
@@ -6765,11 +6770,43 @@ var author$project$Main$viewLoading = function (state) {
 		_List_fromArray(
 			[
 				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Wanikani accuracy and review rates stats')
+					])),
+				A2(
+				elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('API v2 key')
+					])),
+				A2(
+				elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('You can find it on '),
+						A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$href('https://www.wanikani.com/settings/account'),
+								elm$html$Html$Attributes$target('_blank')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('your profile page')
+							]))
+					])),
+				A2(
 				elm$html$Html$input,
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$placeholder('API v2 key'),
-						elm$html$Html$Attributes$value(state.u),
+						elm$html$Html$Attributes$value(state.B),
 						elm$html$Html$Events$onInput(author$project$Main$NewKey)
 					]),
 				_List_Nil),
@@ -6779,17 +6816,7 @@ var author$project$Main$viewLoading = function (state) {
 				_List_fromArray(
 					[
 						elm$html$Html$text(
-						elm$core$String$fromInt(
-							elm$core$List$sum(
-								elm$core$Dict$values(state.C))))
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(
-						A2(elm$core$Maybe$withDefault, '', state.D))
+						A2(elm$core$Maybe$withDefault, '', state.t))
 					]))
 			]));
 };
@@ -6848,7 +6875,7 @@ var elm$core$String$contains = _String_contains;
 var elm$core$String$toInt = _String_toInt;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {ab: fragment, ac: host, ah: path, aj: port_, an: protocol, ao: query};
+		return {aa: fragment, ab: host, ag: path, ai: port_, am: protocol, an: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -6954,6 +6981,6 @@ var elm$url$Url$fromString = function (str) {
 };
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Main$main = elm$browser$Browser$element(
-	{aM: author$project$Main$init, aW: author$project$Main$subscriptions, a_: author$project$Main$update, a0: author$project$Main$view});
+	{aL: author$project$Main$init, aV: author$project$Main$subscriptions, aZ: author$project$Main$update, a$: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(
 	elm$json$Json$Decode$succeed(0))(0)}});}(this));
