@@ -6137,12 +6137,24 @@ var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var author$project$Main$viewBurnTime = function (rates) {
 	var totalSize = elm$core$List$sum(
 		A3(elm$core$List$map2, elm$core$Basics$mul, rates, author$project$Main$levelDelays));
 	return A2(
 		elm$html$Html$table,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('small-table')
+			]),
 		_List_fromArray(
 			[
 				A2(
@@ -6179,7 +6191,7 @@ var author$project$Main$viewBurnTime = function (rates) {
 			]));
 };
 var author$project$Main$levelNames = _List_fromArray(
-	['apprentice 1', 'apprentice 2', 'apprentice 3', 'apprentice 4', 'guru 1', 'guru 2', 'master', 'enlightened', 'burned']);
+	['A1', 'A2', 'A3', 'A4', 'G1', 'G2', 'M', 'E', 'burned']);
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
@@ -6480,7 +6492,10 @@ var author$project$Main$viewQueueSizesTotals = F2(
 			A3(elm$core$List$map2, elm$core$Basics$mul, rates, author$project$Main$levelDelays));
 		return A2(
 			elm$html$Html$table,
-			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('small-table')
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -6578,7 +6593,10 @@ var author$project$Main$viewRatesTotals = F2(
 	function (rates, lessonRate) {
 		return A2(
 			elm$html$Html$table,
-			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('small-table')
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -6591,14 +6609,14 @@ var author$project$Main$viewRatesTotals = F2(
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('Apprentice reviews/day')
+									elm$html$Html$text('Apprentice')
 								])),
 							A2(
 							elm$html$Html$th,
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('Total reviews/day')
+									elm$html$Html$text('Total')
 								]))
 						])),
 					A2(
@@ -6633,17 +6651,10 @@ var author$project$Main$viewRatesTotals = F2(
 				]));
 	});
 var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$p = _VirtualDom_node('p');
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$html$Html$Events$alwaysStop = function (x) {
@@ -6722,6 +6733,13 @@ var author$project$Main$viewLoaded = function (state) {
 	var alwaysThere = _List_fromArray(
 		[
 			A2(
+			elm$html$Html$h1,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Wanikani accuracy and review rates stats')
+				])),
+			A2(
 			elm$html$Html$h2,
 			_List_Nil,
 			_List_fromArray(
@@ -6748,14 +6766,16 @@ var author$project$Main$viewLoaded = function (state) {
 		]);
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('main')
+			]),
 		_Utils_ap(alwaysThere, ifComputed));
 };
 var author$project$Main$NewKey = function (a) {
 	return {$: 0, a: a};
 };
 var elm$html$Html$a = _VirtualDom_node('a');
-var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -6766,7 +6786,10 @@ var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('t
 var author$project$Main$viewLoading = function (state) {
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('main')
+			]),
 		_List_fromArray(
 			[
 				A2(

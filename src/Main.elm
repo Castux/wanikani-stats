@@ -73,7 +73,7 @@ type alias ApiResponse a =
     }
 
 
-levelNames =
+levelNamesFull =
     [ "apprentice 1"
     , "apprentice 2"
     , "apprentice 3"
@@ -82,6 +82,19 @@ levelNames =
     , "guru 2"
     , "master"
     , "enlightened"
+    , "burned"
+    ]
+
+
+levelNames =
+    [ "A1"
+    , "A2"
+    , "A3"
+    , "A4"
+    , "G1"
+    , "G2"
+    , "M"
+    , "E"
     , "burned"
     ]
 
@@ -151,7 +164,7 @@ update msg state =
 
 viewLoading state =
     Html.div
-        []
+        [ Html.Attributes.class "main" ]
         [ Html.h1 [] [ Html.text "Wanikani accuracy and review rates stats" ]
         , Html.h2 [] [ Html.text "API v2 key" ]
         , Html.p []
@@ -192,10 +205,10 @@ viewRates rates lessonRate =
 
 viewRatesTotals rates lessonRate =
     Html.table
-        []
+        [ Html.Attributes.class "small-table" ]
         [ Html.tr []
-            [ Html.th [] [ Html.text "Apprentice reviews/day" ]
-            , Html.th [] [ Html.text "Total reviews/day" ]
+            [ Html.th [] [ Html.text "Apprentice" ]
+            , Html.th [] [ Html.text "Total" ]
             ]
         , Html.tr []
             [ Html.td [] [ rates |> List.take 4 |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
@@ -230,7 +243,7 @@ viewQueueSizesTotals rates lessonRate =
                 |> List.map ((*) lessonRate)
     in
     Html.table
-        []
+        [ Html.Attributes.class "small-table" ]
         [ Html.tr []
             [ Html.th [] [ Html.text "Average apprentice items" ]
             , Html.th [] [ Html.text "Average items" ]
@@ -248,7 +261,7 @@ viewBurnTime rates =
             List.map2 (*) rates levelDelays |> List.sum
     in
     Html.table
-        []
+        [ Html.Attributes.class "small-table" ]
         [ Html.tr []
             [ Html.th [] [ Html.text "Average burn time" ]
             ]
@@ -262,7 +275,8 @@ viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     let
         alwaysThere =
-            [ Html.h2 [] [ Html.text "Accuracy" ]
+            [ Html.h1 [] [ Html.text "Wanikani accuracy and review rates stats" ]
+            , Html.h2 [] [ Html.text "Accuracy" ]
             , viewProbas state.probas
             , Html.h2 [] [ Html.text "Lessons per day" ]
             , Html.input
@@ -291,7 +305,7 @@ viewLoaded state =
                     []
     in
     Html.div
-        []
+        [ Html.Attributes.class "main" ]
         (alwaysThere ++ ifComputed)
 
 
