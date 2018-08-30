@@ -8,6 +8,9 @@ import Html.Events
 import Http
 import Json.Decode as D
 import Matrix
+import Url
+import Url.Parser exposing ((<?>))
+import Url.Parser.Query
 
 
 flip f x y =
@@ -111,6 +114,33 @@ levelDelays =
     ]
 
 
+parseUrl : String -> Maybe String
+parseUrl stringUrl =
+    let
+        pathParser =
+            Url.Parser.oneOf
+                [ Url.Parser.map "" Url.Parser.top
+                , Url.Parser.string
+                ]
+
+        parser =
+            pathParser
+                <?> Url.Parser.Query.string "key"
+                |> Url.Parser.map (\_ s -> s)
+
+        parse url =
+            case Url.Parser.parse parser url of
+                Just (Just key) ->
+                    Just key
+
+                _ ->
+                    Nothing
+    in
+    stringUrl
+        |> Url.fromString
+        |> Maybe.andThen parse
+
+
 initState =
     { key = ""
     , message = Nothing
@@ -118,16 +148,25 @@ initState =
     }
 
 
-init : () -> ( State, Cmd Message )
-init flags =
-    ( Loading initState, Cmd.none )
+init : String -> ( State, Cmd Message )
+init url =
+    case parseUrl url of
+        Just key ->
+            startLoading key
+
+        Nothing ->
+            ( Loading initState, Cmd.none )
+
+
+startLoading key =
+    ( Loading { initState | key = key, message = Just "Loading..." }, getStats key Nothing )
 
 
 update : Message -> State -> ( State, Cmd Message )
 update msg state =
     case ( msg, state ) of
         ( NewKey key, _ ) ->
-            ( Loading { initState | key = key, message = Just "Loading..." }, getStats key Nothing )
+            startLoading key
 
         ( GotApiResponse (Ok resp), Loading loadingState ) ->
             let
