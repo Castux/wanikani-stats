@@ -41,6 +41,7 @@ type alias LoadingState =
 
 type alias LoadedState =
     { probas : Probabilities
+    , reviewCount : Int
     , rates : Maybe (List Float)
     , lessonRate : Float
     , lessonRateString : String
@@ -66,6 +67,7 @@ type alias ResourceResponse a =
 type alias Review =
     { startSrs : Int
     , endSrs : Int
+    , createdAt : String
     }
 
 
@@ -181,8 +183,13 @@ update msg state =
                     let
                         probas =
                             fixProbabilities <| computeProbabilities newCounts
+
+                        total =
+                            newCounts |> Dict.values |> List.sum
                     in
-                    ( Loaded (LoadedState probas Nothing 1.0 "1"), Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] } )
+                    ( Loaded (LoadedState probas total Nothing 1.0 "1")
+                    , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
+                    )
 
         ( GotApiResponse (Err resp), Loading loadingState ) ->
             ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
@@ -320,6 +327,7 @@ viewLoaded state =
                 [ Html.Attributes.class "box" ]
                 [ Html.h2 [] [ Html.text "Accuracy" ]
                 , viewProbas state.probas
+                , Html.p [] [ Html.text <| "(based on " ++ String.fromInt state.reviewCount ++ " reviews)" ]
                 ]
             , Html.div
                 [ Html.Attributes.class "box" ]
@@ -412,9 +420,10 @@ pagesDecoder =
 
 
 reviewDecoder =
-    D.map2 Review
+    D.map3 Review
         (D.at [ "data", "starting_srs_stage" ] D.int)
         (D.at [ "data", "ending_srs_stage" ] D.int)
+        (D.at [ "data", "created_at" ] D.string)
 
 
 jsonDecoder =

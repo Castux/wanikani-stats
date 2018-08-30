@@ -1853,21 +1853,21 @@ var _Http_toTask = F2(function(request, maybeProgress)
 			callback(_Scheduler_fail(elm$http$Http$Timeout));
 		});
 		xhr.addEventListener('load', function() {
-			callback(_Http_handleResponse(xhr, request.aF.a));
+			callback(_Http_handleResponse(xhr, request.aH.a));
 		});
 
 		try
 		{
-			xhr.open(request.aM, request.a_, true);
+			xhr.open(request.aO, request.a0, true);
 		}
 		catch (e)
 		{
-			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a_)));
+			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a0)));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		var body = request.az;
+		var body = request.aA;
 		xhr.send(elm$http$Http$Internal$isStringBody(body)
 			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
 			: body.a
@@ -1890,23 +1890,23 @@ function _Http_configureProgress(xhr, maybeProgress)
 			return;
 		}
 		_Scheduler_rawSpawn(maybeProgress.a({
-			aA: event.loaded,
-			aB: event.total
+			aB: event.loaded,
+			aC: event.total
 		}));
 	});
 }
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.aI; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.aK; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
 
-	xhr.responseType = request.aF.b;
-	xhr.withCredentials = request.a0;
+	xhr.responseType = request.aH.b;
+	xhr.withCredentials = request.a2;
 
-	elm$core$Maybe$isJust(request.aW) && (xhr.timeout = request.aW.a);
+	elm$core$Maybe$isJust(request.aY) && (xhr.timeout = request.aY.a);
 }
 
 
@@ -1938,10 +1938,10 @@ function _Http_handleResponse(xhr, responseToResult)
 function _Http_toResponse(xhr)
 {
 	return {
-		a_: xhr.responseURL,
-		aU: { aD: xhr.status, s: xhr.statusText },
-		aI: _Http_parseHeaders(xhr.getAllResponseHeaders()),
-		az: xhr.response
+		a0: xhr.responseURL,
+		aW: { aE: xhr.status, s: xhr.statusText },
+		aK: _Http_parseHeaders(xhr.getAllResponseHeaders()),
+		aA: xhr.response
 	};
 }
 
@@ -2040,9 +2040,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aL,
-		impl.aZ,
-		impl.aV,
+		impl.aN,
+		impl.a$,
+		impl.aX,
 		function() { return function() {} }
 	);
 });
@@ -4062,11 +4062,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aL,
-		impl.aZ,
-		impl.aV,
+		impl.aN,
+		impl.a$,
+		impl.aX,
 		function(sendToApp, initialModel) {
-			var view = impl.a$;
+			var view = impl.a1;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4098,12 +4098,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aL,
-		impl.aZ,
-		impl.aV,
+		impl.aN,
+		impl.a$,
+		impl.aX,
 		function(sendToApp, initialModel) {
 			var divertHrefToApp = impl.D && impl.D(sendToApp)
-			var view = impl.a$;
+			var view = impl.a1;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4111,12 +4111,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.az);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aA);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aX) && (_VirtualDom_doc.title = title = doc.aX);
+				(title !== doc.aZ) && (_VirtualDom_doc.title = title = doc.aZ);
 			});
 		}
 	);
@@ -4167,8 +4167,8 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aO;
-	var onUrlRequest = impl.aP;
+	var onUrlChange = impl.aQ;
+	var onUrlRequest = impl.aR;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
@@ -4198,13 +4198,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aL: function(flags)
+		aN: function(flags)
 		{
-			return A3(impl.aL, flags, _Browser_getUrl(), key);
+			return A3(impl.aN, flags, _Browser_getUrl(), key);
 		},
+		a1: impl.a1,
 		a$: impl.a$,
-		aZ: impl.aZ,
-		aV: impl.aV
+		aX: impl.aX
 	});
 }
 
@@ -4270,17 +4270,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aJ: 'hidden', z: 'visibilitychange' }
+		? { aL: 'hidden', z: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aJ: 'mozHidden', z: 'mozvisibilitychange' }
+		? { aL: 'mozHidden', z: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aJ: 'msHidden', z: 'msvisibilitychange' }
+		? { aL: 'msHidden', z: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aJ: 'webkitHidden', z: 'webkitvisibilitychange' }
-		: { aJ: 'hidden', z: 'visibilitychange' };
+		? { aL: 'webkitHidden', z: 'webkitvisibilitychange' }
+		: { aL: 'hidden', z: 'visibilitychange' };
 }
 
 
@@ -4361,8 +4361,8 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aq: _Browser_getScene(),
-		au: {
+		ar: _Browser_getScene(),
+		av: {
 			L: _Browser_window.pageXOffset,
 			M: _Browser_window.pageYOffset,
 			x: _Browser_doc.documentElement.clientWidth,
@@ -4400,11 +4400,11 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aq: {
+			ar: {
 				x: node.scrollWidth,
 				r: node.scrollHeight
 			},
-			au: {
+			av: {
 				L: node.scrollLeft,
 				M: node.scrollTop,
 				x: node.clientWidth,
@@ -4438,14 +4438,14 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aq: _Browser_getScene(),
-			au: {
+			ar: _Browser_getScene(),
+			av: {
 				L: x,
 				M: y,
 				x: _Browser_doc.documentElement.clientWidth,
 				r: _Browser_doc.documentElement.clientHeight
 			},
-			aE: {
+			aG: {
 				L: x + rect.left,
 				M: y + rect.top,
 				x: rect.width,
@@ -5661,11 +5661,11 @@ var author$project$Main$GotApiResponse = function (a) {
 };
 var author$project$Main$ApiResponse = F3(
 	function (totalCount, pages, data) {
-		return {N: data, af: pages, aY: totalCount};
+		return {N: data, af: pages, a_: totalCount};
 	});
 var author$project$Main$PagesResponse = F3(
 	function (nextUrl, previousUrl, perPage) {
-		return {ad: nextUrl, aR: perPage, aS: previousUrl};
+		return {ad: nextUrl, aT: perPage, aU: previousUrl};
 	});
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
@@ -6045,17 +6045,16 @@ var author$project$Main$pagesDecoder = A4(
 		'previous_url',
 		elm$json$Json$Decode$nullable(elm$json$Json$Decode$string)),
 	A2(elm$json$Json$Decode$field, 'per_page', elm$json$Json$Decode$int));
-var author$project$Main$Review = F2(
-	function (startSrs, endSrs) {
-		return {Z: endSrs, ar: startSrs};
+var author$project$Main$Review = F3(
+	function (startSrs, endSrs, createdAt) {
+		return {aF: createdAt, Z: endSrs, as: startSrs};
 	});
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
-var elm$json$Json$Decode$map2 = _Json_map2;
-var author$project$Main$reviewDecoder = A3(
-	elm$json$Json$Decode$map2,
+var author$project$Main$reviewDecoder = A4(
+	elm$json$Json$Decode$map3,
 	author$project$Main$Review,
 	A2(
 		elm$json$Json$Decode$at,
@@ -6066,7 +6065,12 @@ var author$project$Main$reviewDecoder = A3(
 		elm$json$Json$Decode$at,
 		_List_fromArray(
 			['data', 'ending_srs_stage']),
-		elm$json$Json$Decode$int));
+		elm$json$Json$Decode$int),
+	A2(
+		elm$json$Json$Decode$at,
+		_List_fromArray(
+			['data', 'created_at']),
+		elm$json$Json$Decode$string));
 var elm$json$Json$Decode$list = _Json_decodeList;
 var author$project$Main$jsonDecoder = A4(
 	elm$json$Json$Decode$map3,
@@ -6124,7 +6128,7 @@ var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var elm$http$Http$expectJson = function (decoder) {
 	return elm$http$Http$expectStringResponse(
 		function (response) {
-			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.az);
+			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.aA);
 			if (_n0.$ === 1) {
 				var decodeError = _n0.a;
 				return elm$core$Result$Err(
@@ -6250,16 +6254,16 @@ var author$project$Main$getStats = F2(
 	function (key, url) {
 		var request = elm$http$Http$request(
 			{
-				az: elm$http$Http$emptyBody,
-				aF: elm$http$Http$expectJson(author$project$Main$jsonDecoder),
-				aI: _List_fromArray(
+				aA: elm$http$Http$emptyBody,
+				aH: elm$http$Http$expectJson(author$project$Main$jsonDecoder),
+				aK: _List_fromArray(
 					[
 						A2(elm$http$Http$header, 'Authorization', 'Bearer ' + key)
 					]),
-				aM: 'GET',
-				aW: elm$core$Maybe$Nothing,
-				a_: A2(elm$core$Maybe$withDefault, 'https://api.wanikani.com/v2/reviews', url),
-				a0: false
+				aO: 'GET',
+				aY: elm$core$Maybe$Nothing,
+				a0: A2(elm$core$Maybe$withDefault, 'https://api.wanikani.com/v2/reviews', url),
+				a2: false
 			});
 		return A2(elm$http$Http$send, author$project$Main$GotApiResponse, request);
 	});
@@ -6307,9 +6311,9 @@ var author$project$Main$subscriptions = function (state) {
 var author$project$Main$Loaded = function (a) {
 	return {$: 1, a: a};
 };
-var author$project$Main$LoadedState = F4(
-	function (probas, rates, lessonRate, lessonRateString) {
-		return {B: lessonRate, O: lessonRateString, aj: probas, S: rates};
+var author$project$Main$LoadedState = F5(
+	function (probas, reviewCount, rates, lessonRate, lessonRateString) {
+		return {B: lessonRate, O: lessonRateString, aj: probas, S: rates, aq: reviewCount};
 	});
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -6373,7 +6377,7 @@ var author$project$Main$countReview = F2(
 	function (review, counts) {
 		return A3(
 			elm$core$Dict$update,
-			_Utils_Tuple2(review.ar, review.Z),
+			_Utils_Tuple2(review.as, review.Z),
 			A2(
 				elm$core$Basics$composeR,
 				elm$core$Maybe$withDefault(0),
@@ -6461,12 +6465,25 @@ var author$project$Matrix$solve = _Platform_outgoingPort(
 					_Utils_Tuple2(
 					'a',
 					elm$json$Json$Encode$list(
-						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.aw)),
+						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.ax)),
 					_Utils_Tuple2(
 					'b',
-					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.ay))
+					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.az))
 				]));
 	});
+var elm$core$Dict$values = function (dict) {
+	return A3(
+		elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
+};
 var elm$core$String$toFloat = _String_toFloat;
 var author$project$Main$update = F2(
 	function (msg, state) {
@@ -6499,15 +6516,17 @@ var author$project$Main$update = F2(
 										loadingState.A,
 										elm$core$Maybe$Just(nextUrl)));
 							} else {
+								var total = elm$core$List$sum(
+									elm$core$Dict$values(newCounts));
 								var probas = author$project$Main$fixProbabilities(
 									author$project$Main$computeProbabilities(newCounts));
 								return _Utils_Tuple2(
 									author$project$Main$Loaded(
-										A4(author$project$Main$LoadedState, probas, elm$core$Maybe$Nothing, 1.0, '1')),
+										A5(author$project$Main$LoadedState, probas, total, elm$core$Maybe$Nothing, 1.0, '1')),
 									author$project$Matrix$solve(
 										{
-											aw: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
-											ay: _List_fromArray(
+											ax: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
+											az: _List_fromArray(
 												[-1.0, 0, 0, 0, 0, 0, 0, 0])
 										}));
 							}
@@ -6588,9 +6607,7 @@ var author$project$Main$format = F2(
 	});
 var author$project$Main$levelDelays = _List_fromArray(
 	[4.0 / 24.0, 8.0 / 24.0, 1.0, 2.0, 7.0, 14.0, 30.0, 120.0]);
-var elm$core$List$sum = function (numbers) {
-	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
-};
+var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$succeed = _Json_succeed;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
@@ -7184,7 +7201,15 @@ var author$project$Main$viewLoaded = function (state) {
 						[
 							elm$html$Html$text('Accuracy')
 						])),
-					author$project$Main$viewProbas(state.aj)
+					author$project$Main$viewProbas(state.aj),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							'(based on ' + (elm$core$String$fromInt(state.aq) + ' reviews)'))
+						]))
 				])),
 			A2(
 			elm$html$Html$div,
@@ -7329,5 +7354,5 @@ var elm$core$Task$perform = F2(
 	});
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Main$main = elm$browser$Browser$element(
-	{aL: author$project$Main$init, aV: author$project$Main$subscriptions, aZ: author$project$Main$update, a$: author$project$Main$view});
+	{aN: author$project$Main$init, aX: author$project$Main$subscriptions, a$: author$project$Main$update, a1: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$string)(0)}});}(this));
