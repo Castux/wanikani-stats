@@ -165,23 +165,26 @@ update msg state =
 viewLoading state =
     Html.div
         [ Html.Attributes.class "main" ]
-        [ Html.h1 [] [ Html.text "Wanikani accuracy and review rates stats" ]
-        , Html.h2 [] [ Html.text "API v2 key" ]
-        , Html.p []
-            [ Html.text "You can find it on "
-            , Html.a
-                [ Html.Attributes.href "https://www.wanikani.com/settings/account"
-                , Html.Attributes.target "_blank"
+        [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review rates stats" ]
+        , Html.div
+            [ Html.Attributes.class "box" ]
+            [ Html.p []
+                [ Html.text "Please enter your API version 2 key. You can find it on "
+                , Html.a
+                    [ Html.Attributes.href "https://www.wanikani.com/settings/account"
+                    , Html.Attributes.target "_blank"
+                    ]
+                    [ Html.text "your profile page" ]
+                , Html.text "."
                 ]
-                [ Html.text "your profile page" ]
+            , Html.input
+                [ Html.Attributes.placeholder "API v2 key"
+                , Html.Attributes.value state.key
+                , Html.Events.onInput NewKey
+                ]
+                []
+            , Html.div [] [ state.message |> Maybe.withDefault "" |> Html.text ]
             ]
-        , Html.input
-            [ Html.Attributes.placeholder "API v2 key"
-            , Html.Attributes.value state.key
-            , Html.Events.onInput NewKey
-            ]
-            []
-        , Html.div [] [ state.message |> Maybe.withDefault "" |> Html.text ]
         ]
 
 
@@ -198,21 +201,23 @@ viewRates rates lessonRate =
                 |> List.map ((*) lessonRate >> format 2 >> Html.text >> List.singleton >> Html.td [])
                 |> Html.tr []
     in
-    Html.table
-        []
-        [ headersRow, ratesRow ]
-
-
-viewRatesTotals rates lessonRate =
-    Html.table
-        [ Html.Attributes.class "small-table" ]
-        [ Html.tr []
-            [ Html.th [] [ Html.text "Apprentice" ]
-            , Html.th [] [ Html.text "Total" ]
-            ]
-        , Html.tr []
-            [ Html.td [] [ rates |> List.take 4 |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
-            , Html.td [] [ rates |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
+    Html.div
+        [ Html.Attributes.class "box" ]
+        [ Html.h2 [] [ Html.text "Reviews per day" ]
+        , Html.p [] [ Html.text "(to keep up with the lessons)" ]
+        , Html.table
+            []
+            [ headersRow, ratesRow ]
+        , Html.table
+            [ Html.Attributes.class "small-table" ]
+            [ Html.tr []
+                [ Html.th [] [ Html.text "Apprentice" ]
+                , Html.th [] [ Html.text "Total" ]
+                ]
+            , Html.tr []
+                [ Html.td [] [ rates |> List.take 4 |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
+                , Html.td [] [ rates |> List.sum |> (*) lessonRate |> format 2 |> Html.text ]
+                ]
             ]
         ]
 
@@ -225,32 +230,30 @@ viewQueueSizes rates lessonRate =
                 |> List.map (Html.text >> List.singleton >> Html.th [])
                 |> Html.tr []
 
-        queuesRow =
-            rates
-                |> List.map2 (*) levelDelays
-                |> List.map ((*) lessonRate >> format 2 >> Html.text >> List.singleton >> Html.td [])
-                |> Html.tr []
-    in
-    Html.table
-        []
-        [ headersRow, queuesRow ]
-
-
-viewQueueSizesTotals rates lessonRate =
-    let
         sizes =
             List.map2 (*) rates levelDelays
                 |> List.map ((*) lessonRate)
+
+        queuesRow =
+            sizes
+                |> List.map (format 2 >> Html.text >> List.singleton >> Html.td [])
+                |> Html.tr []
     in
-    Html.table
-        [ Html.Attributes.class "small-table" ]
-        [ Html.tr []
-            [ Html.th [] [ Html.text "Average apprentice items" ]
-            , Html.th [] [ Html.text "Average items" ]
-            ]
-        , Html.tr []
-            [ Html.td [] [ sizes |> List.take 4 |> List.sum |> format 2 |> Html.text ]
-            , Html.td [] [ sizes |> List.sum |> format 2 |> Html.text ]
+    Html.div [ Html.Attributes.class "box" ]
+        [ Html.h2 [] [ Html.text "Average number of non burned items" ]
+        , Html.table
+            []
+            [ headersRow, queuesRow ]
+        , Html.table
+            [ Html.Attributes.class "small-table" ]
+            [ Html.tr []
+                [ Html.th [] [ Html.text "Average apprentice items" ]
+                , Html.th [] [ Html.text "Average items" ]
+                ]
+            , Html.tr []
+                [ Html.td [] [ sizes |> List.take 4 |> List.sum |> format 2 |> Html.text ]
+                , Html.td [] [ sizes |> List.sum |> format 2 |> Html.text ]
+                ]
             ]
         ]
 
@@ -260,13 +263,17 @@ viewBurnTime rates =
         totalSize =
             List.map2 (*) rates levelDelays |> List.sum
     in
-    Html.table
-        [ Html.Attributes.class "small-table" ]
-        [ Html.tr []
-            [ Html.th [] [ Html.text "Average burn time" ]
-            ]
-        , Html.tr []
-            [ Html.td [] [ totalSize |> format 2 |> flip (++) " days" |> Html.text ]
+    Html.div
+        [ Html.Attributes.class "box" ]
+        [ Html.h2 [] [ Html.text "Time to burn" ]
+        , Html.table
+            [ Html.Attributes.class "small-table" ]
+            [ Html.tr []
+                [ Html.th [] [ Html.text "Average burn time" ]
+                ]
+            , Html.tr []
+                [ Html.td [] [ totalSize |> format 2 |> flip (++) " days" |> Html.text ]
+                ]
             ]
         ]
 
@@ -275,29 +282,29 @@ viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     let
         alwaysThere =
-            [ Html.h1 [] [ Html.text "Wanikani accuracy and review rates stats" ]
-            , Html.h2 [] [ Html.text "Accuracy" ]
-            , viewProbas state.probas
-            , Html.h2 [] [ Html.text "Lessons per day" ]
-            , Html.input
-                [ Html.Attributes.placeholder "Lessons per day"
-                , Html.Attributes.value state.lessonRateString
-                , Html.Events.onInput NewLessonRate
+            [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review rates stats" ]
+            , Html.div
+                [ Html.Attributes.class "box" ]
+                [ Html.h2 [] [ Html.text "Accuracy" ]
+                , viewProbas state.probas
                 ]
-                []
+            , Html.div
+                [ Html.Attributes.class "box" ]
+                [ Html.h2 [] [ Html.text "Lessons per day" ]
+                , Html.input
+                    [ Html.Attributes.placeholder "Lessons per day"
+                    , Html.Attributes.value state.lessonRateString
+                    , Html.Events.onInput NewLessonRate
+                    ]
+                    []
+                ]
             ]
 
         ifComputed =
             case state.rates of
                 Just rates ->
-                    [ Html.h2 [] [ Html.text "Reviews per day" ]
-                    , Html.p [] [ Html.text "(to keep up with the lessons)" ]
-                    , viewRates rates state.lessonRate
-                    , viewRatesTotals rates state.lessonRate
-                    , Html.h2 [] [ Html.text "Average number of non burned items" ]
+                    [ viewRates rates state.lessonRate
                     , viewQueueSizes rates state.lessonRate
-                    , viewQueueSizesTotals rates state.lessonRate
-                    , Html.h2 [] [ Html.text "Time to burn" ]
                     , viewBurnTime rates
                     ]
 
