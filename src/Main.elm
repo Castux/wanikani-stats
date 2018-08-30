@@ -165,7 +165,7 @@ update msg state =
 viewLoading state =
     Html.div
         [ Html.Attributes.class "main" ]
-        [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review rates stats" ]
+        [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review pacing" ]
         , Html.div
             [ Html.Attributes.class "box" ]
             [ Html.p []
@@ -245,12 +245,12 @@ viewQueueSizes rates lessonRate =
             [ headersRow, queuesRow ]
         , Html.p
             []
-            [ Html.b [] [ Html.text "Average apprentice items: " ]
+            [ Html.b [] [ Html.text "Apprentice: " ]
             , sizes |> List.take 4 |> List.sum |> format 2 |> Html.text
             ]
         , Html.p
             []
-            [ Html.b [] [ Html.text "Average items: " ]
+            [ Html.b [] [ Html.text "Total: " ]
             , sizes |> List.sum |> format 2 |> Html.text
             ]
         ]
@@ -276,7 +276,7 @@ viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     let
         alwaysThere =
-            [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review rates stats" ]
+            [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review pacing" ]
             , Html.div
                 [ Html.Attributes.class "box" ]
                 [ Html.h2 [] [ Html.text "Accuracy" ]

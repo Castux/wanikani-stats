@@ -6508,7 +6508,7 @@ var author$project$Main$viewQueueSizes = F2(
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('Average apprentice items: ')
+									elm$html$Html$text('Apprentice: ')
 								])),
 							elm$html$Html$text(
 							A2(
@@ -6527,7 +6527,7 @@ var author$project$Main$viewQueueSizes = F2(
 							_List_Nil,
 							_List_fromArray(
 								[
-									elm$html$Html$text('Average items: ')
+									elm$html$Html$text('Total: ')
 								])),
 							elm$html$Html$text(
 							A2(
@@ -6694,7 +6694,7 @@ var author$project$Main$viewLoaded = function (state) {
 				]),
 			_List_fromArray(
 				[
-					elm$html$Html$text('Wanikani accuracy and review rates stats')
+					elm$html$Html$text('Wanikani accuracy and review pacing')
 				])),
 			A2(
 			elm$html$Html$div,
@@ -6775,7 +6775,7 @@ var author$project$Main$viewLoading = function (state) {
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text('Wanikani accuracy and review rates stats')
+						elm$html$Html$text('Wanikani accuracy and review pacing')
 					])),
 				A2(
 				elm$html$Html$div,
