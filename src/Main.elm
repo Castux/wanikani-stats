@@ -195,7 +195,7 @@ checkState loadingState =
                 loadingState.counts |> Dict.values |> List.sum
 
             lessons =
-                Debug.log "lessons" (Dict.toList loadingState.lessons)
+                Dict.toList loadingState.lessons
         in
         ( Loaded (LoadedState probas total Nothing 1.0 "1" lessons)
         , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
@@ -245,6 +245,9 @@ update msg state =
 
                 Nothing ->
                     checkState { newState | callsFinished = newState.callsFinished + 1 }
+
+        ( GotLessonsApiResponse (Err resp), Loading loadingState ) ->
+            ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
 
         ( GotSolution rates, Loaded loadedState ) ->
             ( Loaded { loadedState | rates = Just rates }, Cmd.none )
@@ -370,6 +373,19 @@ viewBurnTime rates =
         ]
 
 
+viewLesson ( date, value ) =
+    Html.p []
+        [ Html.text <| date ++ ": " ++ String.fromInt value ]
+
+
+viewLessons lessons =
+    Html.div
+        [ Html.Attributes.class "box" ]
+        ([ Html.h2 [] [ Html.text "Lessons history" ] ]
+            ++ List.map viewLesson lessons
+        )
+
+
 viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     let
@@ -399,6 +415,7 @@ viewLoaded state =
                     [ viewRates rates state.lessonRate
                     , viewQueueSizes rates state.lessonRate
                     , viewBurnTime rates
+                    , viewLessons state.lessonDates
                     ]
 
                 Nothing ->

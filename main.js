@@ -6530,7 +6530,6 @@ var author$project$Matrix$solve = _Platform_outgoingPort(
 					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.b))
 				]));
 	});
-var elm$core$Debug$log = _Debug_log;
 var elm$core$Dict$values = function (dict) {
 	return A3(
 		elm$core$Dict$foldr,
@@ -6550,10 +6549,7 @@ var author$project$Main$checkState = function (loadingState) {
 			elm$core$Dict$values(loadingState.counts));
 		var probas = author$project$Main$fixProbabilities(
 			author$project$Main$computeProbabilities(loadingState.counts));
-		var lessons = A2(
-			elm$core$Debug$log,
-			'lessons',
-			elm$core$Dict$toList(loadingState.lessons));
+		var lessons = elm$core$Dict$toList(loadingState.lessons);
 		return _Utils_Tuple2(
 			author$project$Main$Loaded(
 				A6(author$project$Main$LoadedState, probas, total, elm$core$Maybe$Nothing, 1.0, '1', lessons)),
@@ -6619,7 +6615,7 @@ var elm$core$String$toFloat = _String_toFloat;
 var author$project$Main$update = F2(
 	function (msg, state) {
 		var _n0 = _Utils_Tuple2(msg, state);
-		_n0$6:
+		_n0$7:
 		while (true) {
 			switch (_n0.a.$) {
 				case 'NewKey':
@@ -6652,7 +6648,7 @@ var author$project$Main$update = F2(
 										{callsFinished: newState.callsFinished + 1}));
 							}
 						} else {
-							break _n0$6;
+							break _n0$7;
 						}
 					} else {
 						if (_n0.b.$ === 'Loading') {
@@ -6667,45 +6663,62 @@ var author$project$Main$update = F2(
 										})),
 								elm$core$Platform$Cmd$none);
 						} else {
-							break _n0$6;
+							break _n0$7;
 						}
 					}
 				case 'GotLessonsApiResponse':
-					if ((_n0.a.a.$ === 'Ok') && (_n0.b.$ === 'Loading')) {
-						var resp = _n0.a.a.a;
-						var loadingState = _n0.b.a;
-						var newLessons = A3(
-							elm$core$List$foldl,
-							author$project$Main$countLesson,
-							loadingState.lessons,
-							A2(
-								elm$core$List$filterMap,
-								function ($) {
-									return $.startedAt;
-								},
-								resp.data));
-						var newState = _Utils_update(
-							loadingState,
-							{lessons: newLessons});
-						var _n2 = resp.pages.nextUrl;
-						if (_n2.$ === 'Just') {
-							var nextUrl = _n2.a;
-							return _Utils_Tuple2(
-								author$project$Main$Loading(newState),
-								A4(
-									author$project$Main$getCollection,
-									loadingState.key,
-									author$project$Main$Full(nextUrl),
-									author$project$Main$lessonDecoder,
-									author$project$Main$GotLessonsApiResponse));
+					if (_n0.a.a.$ === 'Ok') {
+						if (_n0.b.$ === 'Loading') {
+							var resp = _n0.a.a.a;
+							var loadingState = _n0.b.a;
+							var newLessons = A3(
+								elm$core$List$foldl,
+								author$project$Main$countLesson,
+								loadingState.lessons,
+								A2(
+									elm$core$List$filterMap,
+									function ($) {
+										return $.startedAt;
+									},
+									resp.data));
+							var newState = _Utils_update(
+								loadingState,
+								{lessons: newLessons});
+							var _n2 = resp.pages.nextUrl;
+							if (_n2.$ === 'Just') {
+								var nextUrl = _n2.a;
+								return _Utils_Tuple2(
+									author$project$Main$Loading(newState),
+									A4(
+										author$project$Main$getCollection,
+										loadingState.key,
+										author$project$Main$Full(nextUrl),
+										author$project$Main$lessonDecoder,
+										author$project$Main$GotLessonsApiResponse));
+							} else {
+								return author$project$Main$checkState(
+									_Utils_update(
+										newState,
+										{callsFinished: newState.callsFinished + 1}));
+							}
 						} else {
-							return author$project$Main$checkState(
-								_Utils_update(
-									newState,
-									{callsFinished: newState.callsFinished + 1}));
+							break _n0$7;
 						}
 					} else {
-						break _n0$6;
+						if (_n0.b.$ === 'Loading') {
+							var resp = _n0.a.a.a;
+							var loadingState = _n0.b.a;
+							return _Utils_Tuple2(
+								author$project$Main$Loading(
+									_Utils_update(
+										loadingState,
+										{
+											message: elm$core$Maybe$Just('Error!')
+										})),
+								elm$core$Platform$Cmd$none);
+						} else {
+							break _n0$7;
+						}
 					}
 				case 'GotSolution':
 					if (_n0.b.$ === 'Loaded') {
@@ -6720,7 +6733,7 @@ var author$project$Main$update = F2(
 									})),
 							elm$core$Platform$Cmd$none);
 					} else {
-						break _n0$6;
+						break _n0$7;
 					}
 				default:
 					if (_n0.b.$ === 'Loaded') {
@@ -6737,7 +6750,7 @@ var author$project$Main$update = F2(
 									{lessonRate: newRate, lessonRateString: rateStr})),
 							elm$core$Platform$Cmd$none);
 					} else {
-						break _n0$6;
+						break _n0$7;
 					}
 			}
 		}
@@ -6831,6 +6844,38 @@ var author$project$Main$viewBurnTime = function (rates) {
 							A2(author$project$Main$format, 2, totalSize)))
 					]))
 			]));
+};
+var author$project$Main$viewLesson = function (_n0) {
+	var date = _n0.a;
+	var value = _n0.b;
+	return A2(
+		elm$html$Html$p,
+		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$text(
+				date + (': ' + elm$core$String$fromInt(value)))
+			]));
+};
+var author$project$Main$viewLessons = function (lessons) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('box')
+			]),
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h2,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Lessons history')
+						]))
+				]),
+			A2(elm$core$List$map, author$project$Main$viewLesson, lessons)));
 };
 var author$project$Main$levelNames = _List_fromArray(
 	['A1', 'A2', 'A3', 'A4', 'G1', 'G2', 'M', 'E', 'burned']);
@@ -7325,7 +7370,8 @@ var author$project$Main$viewLoaded = function (state) {
 				[
 					A2(author$project$Main$viewRates, rates, state.lessonRate),
 					A2(author$project$Main$viewQueueSizes, rates, state.lessonRate),
-					author$project$Main$viewBurnTime(rates)
+					author$project$Main$viewBurnTime(rates),
+					author$project$Main$viewLessons(state.lessonDates)
 				]);
 		} else {
 			return _List_Nil;
