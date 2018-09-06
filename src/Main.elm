@@ -19,7 +19,8 @@ flip f x y =
 
 type Message
     = NewKey String
-    | GotApiResponse (Result Http.Error (ApiResponse Review))
+    | GotReviewsApiResponse (Result Http.Error (ApiResponse Review))
+    | GotLessonsApiResponse (Result Http.Error (ApiResponse Lesson))
     | GotSolution (List Float)
     | NewLessonRate String
 
@@ -36,6 +37,8 @@ type alias LoadingState =
     { key : String
     , message : Maybe String
     , counts : Counts
+    , lessons : List Lesson
+    , callsFinished : Int
     }
 
 
@@ -71,11 +74,21 @@ type alias Review =
     }
 
 
+type alias Lesson =
+    { startedAt : Maybe String
+    }
+
+
 type alias ApiResponse a =
     { totalCount : Int
     , pages : PagesResponse
     , data : List a
     }
+
+
+type ApiUrl
+    = Route String
+    | Full String
 
 
 levelNamesFull =
@@ -147,6 +160,8 @@ initState =
     { key = ""
     , message = Nothing
     , counts = emptyCounts
+    , lessons = []
+    , callsFinished = 0
     }
 
 
@@ -161,7 +176,32 @@ init url =
 
 
 startLoading key =
-    ( Loading { initState | key = key, message = Just "Loading..." }, getStats key Nothing )
+    ( Loading { initState | key = key, message = Just "Loading..." }
+    , Cmd.batch
+        [ getCollection key (Route "reviews") reviewDecoder GotReviewsApiResponse
+        , getCollection key (Route "assignments") lessonDecoder GotLessonsApiResponse
+        ]
+    )
+
+
+checkState loadingState =
+    if loadingState.callsFinished == 2 then
+        let
+            probas =
+                fixProbabilities <| computeProbabilities loadingState.counts
+
+            total =
+                loadingState.counts |> Dict.values |> List.sum
+
+            _ =
+                Debug.log "lessons" loadingState.lessons
+        in
+        ( Loaded (LoadedState probas total Nothing 1.0 "1")
+        , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
+        )
+
+    else
+        ( Loading loadingState, Cmd.none )
 
 
 update : Message -> State -> ( State, Cmd Message )
@@ -170,29 +210,35 @@ update msg state =
         ( NewKey key, _ ) ->
             startLoading key
 
-        ( GotApiResponse (Ok resp), Loading loadingState ) ->
+        ( GotReviewsApiResponse (Ok resp), Loading loadingState ) ->
             let
                 newCounts =
                     List.foldr countReview loadingState.counts resp.data
+
+                newState =
+                    { loadingState | counts = newCounts }
             in
             case resp.pages.nextUrl of
                 Just nextUrl ->
-                    ( Loading { loadingState | counts = newCounts, message = Just "Loading..." }, getStats loadingState.key (Just nextUrl) )
+                    ( Loading newState, getCollection loadingState.key (Full nextUrl) reviewDecoder GotReviewsApiResponse )
 
                 Nothing ->
-                    let
-                        probas =
-                            fixProbabilities <| computeProbabilities newCounts
+                    checkState { newState | callsFinished = newState.callsFinished + 1 }
 
-                        total =
-                            newCounts |> Dict.values |> List.sum
-                    in
-                    ( Loaded (LoadedState probas total Nothing 1.0 "1")
-                    , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
-                    )
-
-        ( GotApiResponse (Err resp), Loading loadingState ) ->
+        ( GotReviewsApiResponse (Err resp), Loading loadingState ) ->
             ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
+
+        ( GotLessonsApiResponse (Ok resp), Loading loadingState ) ->
+            let
+                newState =
+                    { loadingState | lessons = loadingState.lessons ++ resp.data }
+            in
+            case resp.pages.nextUrl of
+                Just nextUrl ->
+                    ( Loading newState, getCollection loadingState.key (Full nextUrl) lessonDecoder GotLessonsApiResponse )
+
+                Nothing ->
+                    checkState { newState | callsFinished = newState.callsFinished + 1 }
 
         ( GotSolution rates, Loaded loadedState ) ->
             ( Loaded { loadedState | rates = Just rates }, Cmd.none )
@@ -426,27 +472,40 @@ reviewDecoder =
         (D.at [ "data", "created_at" ] D.string)
 
 
-jsonDecoder =
+lessonDecoder =
+    D.map Lesson
+        (D.at [ "data", "started_at" ] (D.maybe D.string))
+
+
+collectionDecoder dataDecoder =
     D.map3 ApiResponse
         (D.field "total_count" D.int)
         (D.field "pages" pagesDecoder)
-        (D.field "data" (D.list reviewDecoder))
+        (D.field "data" (D.list dataDecoder))
 
 
-getStats key url =
+getCollection key url decoder messageCons =
     let
+        finalUrl =
+            case url of
+                Full str ->
+                    str
+
+                Route str ->
+                    "https://api.wanikani.com/v2/" ++ str
+
         request =
             Http.request
                 { method = "GET"
                 , headers = [ Http.header "Authorization" ("Bearer " ++ key) ]
-                , url = url |> Maybe.withDefault "https://api.wanikani.com/v2/reviews"
+                , url = finalUrl
                 , body = Http.emptyBody
-                , expect = Http.expectJson jsonDecoder
+                , expect = Http.expectJson (collectionDecoder decoder)
                 , timeout = Nothing
                 , withCredentials = False
                 }
     in
-    Http.send GotApiResponse request
+    Http.send messageCons request
 
 
 emptyCounts =
