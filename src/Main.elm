@@ -37,7 +37,7 @@ type alias LoadingState =
     { key : String
     , message : Maybe String
     , counts : Counts
-    , lessons : List Lesson
+    , lessons : Dict String Int
     , callsFinished : Int
     }
 
@@ -48,6 +48,7 @@ type alias LoadedState =
     , rates : Maybe (List Float)
     , lessonRate : Float
     , lessonRateString : String
+    , lessonDates : List ( String, Int )
     }
 
 
@@ -160,7 +161,7 @@ initState =
     { key = ""
     , message = Nothing
     , counts = emptyCounts
-    , lessons = []
+    , lessons = Dict.empty
     , callsFinished = 0
     }
 
@@ -193,10 +194,10 @@ checkState loadingState =
             total =
                 loadingState.counts |> Dict.values |> List.sum
 
-            _ =
-                Debug.log "lessons" loadingState.lessons
+            lessons =
+                Debug.log "lessons" (Dict.toList loadingState.lessons)
         in
-        ( Loaded (LoadedState probas total Nothing 1.0 "1")
+        ( Loaded (LoadedState probas total Nothing 1.0 "1" lessons)
         , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
         )
 
@@ -230,8 +231,13 @@ update msg state =
 
         ( GotLessonsApiResponse (Ok resp), Loading loadingState ) ->
             let
+                newLessons =
+                    resp.data
+                        |> List.filterMap .startedAt
+                        |> List.foldl countLesson loadingState.lessons
+
                 newState =
-                    { loadingState | lessons = loadingState.lessons ++ resp.data }
+                    { loadingState | lessons = newLessons }
             in
             case resp.pages.nextUrl of
                 Just nextUrl ->
@@ -515,6 +521,13 @@ emptyCounts =
 countReview review counts =
     Dict.update
         ( review.startSrs, review.endSrs )
+        (Maybe.withDefault 0 >> (+) 1 >> Just)
+        counts
+
+
+countLesson lessonDate counts =
+    Dict.update
+        (String.left 10 lessonDate)
         (Maybe.withDefault 0 >> (+) 1 >> Just)
         counts
 

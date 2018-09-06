@@ -4491,6 +4491,23 @@ var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
 var author$project$Main$emptyCounts = elm$core$Dict$empty;
 var elm$core$Maybe$Nothing = {$: 'Nothing'};
+var author$project$Main$initState = {callsFinished: 0, counts: author$project$Main$emptyCounts, key: '', lessons: elm$core$Dict$empty, message: elm$core$Maybe$Nothing};
+var elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
@@ -4571,23 +4588,6 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Main$initState = {callsFinished: 0, counts: author$project$Main$emptyCounts, key: '', lessons: _List_Nil, message: elm$core$Maybe$Nothing};
-var elm$core$Basics$apR = F2(
-	function (x, f) {
-		return f(x);
-	});
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
 var elm$core$Basics$lt = _Utils_lt;
 var elm$core$String$length = _String_length;
 var elm$core$String$slice = _String_slice;
@@ -6384,9 +6384,9 @@ var author$project$Main$Full = function (a) {
 var author$project$Main$Loaded = function (a) {
 	return {$: 'Loaded', a: a};
 };
-var author$project$Main$LoadedState = F5(
-	function (probas, reviewCount, rates, lessonRate, lessonRateString) {
-		return {lessonRate: lessonRate, lessonRateString: lessonRateString, probas: probas, rates: rates, reviewCount: reviewCount};
+var author$project$Main$LoadedState = F6(
+	function (probas, reviewCount, rates, lessonRate, lessonRateString, lessonDates) {
+		return {lessonDates: lessonDates, lessonRate: lessonRate, lessonRateString: lessonRateString, probas: probas, rates: rates, reviewCount: reviewCount};
 	});
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -6550,10 +6550,13 @@ var author$project$Main$checkState = function (loadingState) {
 			elm$core$Dict$values(loadingState.counts));
 		var probas = author$project$Main$fixProbabilities(
 			author$project$Main$computeProbabilities(loadingState.counts));
-		var _n0 = A2(elm$core$Debug$log, 'lessons', loadingState.lessons);
+		var lessons = A2(
+			elm$core$Debug$log,
+			'lessons',
+			elm$core$Dict$toList(loadingState.lessons));
 		return _Utils_Tuple2(
 			author$project$Main$Loaded(
-				A5(author$project$Main$LoadedState, probas, total, elm$core$Maybe$Nothing, 1.0, '1')),
+				A6(author$project$Main$LoadedState, probas, total, elm$core$Maybe$Nothing, 1.0, '1', lessons)),
 			author$project$Matrix$solve(
 				{
 					a: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
@@ -6566,6 +6569,20 @@ var author$project$Main$checkState = function (loadingState) {
 			elm$core$Platform$Cmd$none);
 	}
 };
+var author$project$Main$countLesson = F2(
+	function (lessonDate, counts) {
+		return A3(
+			elm$core$Dict$update,
+			A2(elm$core$String$left, 10, lessonDate),
+			A2(
+				elm$core$Basics$composeR,
+				elm$core$Maybe$withDefault(0),
+				A2(
+					elm$core$Basics$composeR,
+					elm$core$Basics$add(1),
+					elm$core$Maybe$Just)),
+			counts);
+	});
 var author$project$Main$countReview = F2(
 	function (review, counts) {
 		return A3(
@@ -6579,6 +6596,24 @@ var author$project$Main$countReview = F2(
 					elm$core$Basics$add(1),
 					elm$core$Maybe$Just)),
 			counts);
+	});
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
 	});
 var elm$core$String$toFloat = _String_toFloat;
 var author$project$Main$update = F2(
@@ -6639,11 +6674,19 @@ var author$project$Main$update = F2(
 					if ((_n0.a.a.$ === 'Ok') && (_n0.b.$ === 'Loading')) {
 						var resp = _n0.a.a.a;
 						var loadingState = _n0.b.a;
+						var newLessons = A3(
+							elm$core$List$foldl,
+							author$project$Main$countLesson,
+							loadingState.lessons,
+							A2(
+								elm$core$List$filterMap,
+								function ($) {
+									return $.startedAt;
+								},
+								resp.data));
 						var newState = _Utils_update(
 							loadingState,
-							{
-								lessons: _Utils_ap(loadingState.lessons, resp.data)
-							});
+							{lessons: newLessons});
 						var _n2 = resp.pages.nextUrl;
 						if (_n2.$ === 'Just') {
 							var nextUrl = _n2.a;
