@@ -7,7 +7,10 @@ import Html.Attributes
 import Html.Events
 import Http
 import Json.Decode as D
+import Lessons
 import Matrix
+import Task
+import Time
 import Url
 import Url.Parser exposing ((<?>))
 import Url.Parser.Query
@@ -22,6 +25,7 @@ type Message
     | GotReviewsApiResponse (Result Http.Error (ApiResponse Review))
     | GotLessonsApiResponse (Result Http.Error (ApiResponse Lesson))
     | GotSolution (List Float)
+    | GotTimezone Time.Zone
     | NewLessonRate String
 
 
@@ -38,6 +42,7 @@ type alias LoadingState =
     , message : Maybe String
     , counts : Counts
     , lessons : Dict String Int
+    , zone : Maybe Time.Zone
     , callsFinished : Int
     }
 
@@ -162,6 +167,7 @@ initState =
     , message = Nothing
     , counts = emptyCounts
     , lessons = Dict.empty
+    , zone = Nothing
     , callsFinished = 0
     }
 
@@ -181,28 +187,34 @@ startLoading key =
     , Cmd.batch
         [ getCollection key (Route "reviews") reviewDecoder GotReviewsApiResponse
         , getCollection key (Route "assignments") lessonDecoder GotLessonsApiResponse
+        , Task.perform GotTimezone Time.here
         ]
     )
 
 
 checkState loadingState =
-    if loadingState.callsFinished == 2 then
-        let
-            probas =
-                fixProbabilities <| computeProbabilities loadingState.counts
+    case loadingState.zone of
+        Just zone ->
+            if loadingState.callsFinished == 2 then
+                let
+                    probas =
+                        fixProbabilities <| computeProbabilities loadingState.counts
 
-            total =
-                loadingState.counts |> Dict.values |> List.sum
+                    total =
+                        loadingState.counts |> Dict.values |> List.sum
 
-            lessons =
-                Dict.toList loadingState.lessons
-        in
-        ( Loaded (LoadedState probas total Nothing 1.0 "1" lessons)
-        , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
-        )
+                    lessons =
+                        Dict.toList loadingState.lessons
+                in
+                ( Loaded (LoadedState probas total Nothing 1.0 "1" lessons)
+                , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
+                )
 
-    else
-        ( Loading loadingState, Cmd.none )
+            else
+                ( Loading loadingState, Cmd.none )
+
+        Nothing ->
+            ( Loading loadingState, Cmd.none )
 
 
 update : Message -> State -> ( State, Cmd Message )
@@ -248,6 +260,9 @@ update msg state =
 
         ( GotLessonsApiResponse (Err resp), Loading loadingState ) ->
             ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
+
+        ( GotTimezone zone, Loading loadingState ) ->
+            checkState { loadingState | zone = Just zone }
 
         ( GotSolution rates, Loaded loadedState ) ->
             ( Loaded { loadedState | rates = Just rates }, Cmd.none )
@@ -373,19 +388,6 @@ viewBurnTime rates =
         ]
 
 
-viewLesson ( date, value ) =
-    Html.p []
-        [ Html.text <| date ++ ": " ++ String.fromInt value ]
-
-
-viewLessons lessons =
-    Html.div
-        [ Html.Attributes.class "box" ]
-        ([ Html.h2 [] [ Html.text "Lessons history" ] ]
-            ++ List.map viewLesson lessons
-        )
-
-
 viewLoaded : LoadedState -> Html.Html Message
 viewLoaded state =
     let
@@ -415,7 +417,7 @@ viewLoaded state =
                     [ viewRates rates state.lessonRate
                     , viewQueueSizes rates state.lessonRate
                     , viewBurnTime rates
-                    , viewLessons state.lessonDates
+                    , Lessons.view state.lessonDates
                     ]
 
                 Nothing ->
