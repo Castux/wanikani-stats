@@ -85,10 +85,6 @@ getCollection key url decoder messageCons =
         responseHandler response =
             case response of
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "error" err
-                    in
                     messageCons [] Nothing
 
                 Ok payload ->
