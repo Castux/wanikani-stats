@@ -89,26 +89,26 @@ getCollection key url decoder messageCons =
                         _ =
                             Debug.log "error" err
                     in
-                    messageCons [] Cmd.none
+                    messageCons [] Nothing
 
                 Ok payload ->
                     case payload.pages.nextUrl of
                         Just nextUrl ->
                             messageCons
                                 payload.data
-                                (getCollection key (Full nextUrl) decoder messageCons)
+                                (Just (getCollection key (Full nextUrl) decoder messageCons))
 
                         Nothing ->
-                            messageCons payload.data Cmd.none
+                            messageCons payload.data Nothing
     in
     Http.send responseHandler request
 
 
-getReviews : String -> (List Review -> Cmd msg -> msg) -> Cmd msg
+getReviews : String -> (List Review -> Maybe (Cmd msg) -> msg) -> Cmd msg
 getReviews key messageCons =
     getCollection key (Route "reviews") reviewDecoder messageCons
 
 
-getLessons : String -> (List Lesson -> Cmd msg -> msg) -> Cmd msg
+getLessons : String -> (List Lesson -> Maybe (Cmd msg) -> msg) -> Cmd msg
 getLessons key messageCons =
     getCollection key (Route "assignments") lessonDecoder messageCons
