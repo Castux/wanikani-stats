@@ -1,4 +1,4 @@
-module Api exposing (ApiResponse, ApiUrl(..), Lesson, PagesResponse, ResourceResponse, Review)
+module Api exposing (Lesson, Review, getLessons, getReviews)
 
 import Http
 import Json.Decode as D
@@ -9,10 +9,6 @@ type alias PagesResponse =
     , previousUrl : Maybe String
     , perPage : Int
     }
-
-
-type alias ResourceResponse a =
-    { data : a }
 
 
 type alias Review =
@@ -85,5 +81,34 @@ getCollection key url decoder messageCons =
                 , timeout = Nothing
                 , withCredentials = False
                 }
+
+        responseHandler response =
+            case response of
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "error" err
+                    in
+                    messageCons [] Cmd.none
+
+                Ok payload ->
+                    case payload.pages.nextUrl of
+                        Just nextUrl ->
+                            messageCons
+                                payload.data
+                                (getCollection key (Full nextUrl) decoder messageCons)
+
+                        Nothing ->
+                            messageCons payload.data Cmd.none
     in
-    Http.send messageCons request
+    Http.send responseHandler request
+
+
+getReviews : String -> (List Review -> Cmd msg -> msg) -> Cmd msg
+getReviews key messageCons =
+    getCollection key (Route "reviews") reviewDecoder messageCons
+
+
+getLessons : String -> (List Lesson -> Cmd msg -> msg) -> Cmd msg
+getLessons key messageCons =
+    getCollection key (Route "assignments") lessonDecoder messageCons

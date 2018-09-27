@@ -18,8 +18,8 @@ import Url.Parser.Query
 
 type Message
     = NewKey String
-    | GotReviews (List Api.Review)
-    | GotLessons (List Api.Lesson)
+    | GotReviews (List Api.Review) (Cmd Message)
+    | GotLessons (List Api.Lesson) (Cmd Message)
     | GotSolution (List Float)
     | GotTimezone Time.Zone
     | NewLessonRate String
@@ -84,9 +84,9 @@ parseUrl stringUrl =
 startLoading key =
     ( { initState | key = key, message = Just "Loading..." }
     , Cmd.batch
-        [ -- Api.getCollection key (Route "reviews") Api.reviewDecoder GotReviewsApiResponse
-          -- Api.getCollection key (Route "assignments") Api.lessonDecoder GotLessonsApiResponse
-          Task.perform GotTimezone Time.here
+        [ Api.getReviews key GotReviews
+        , Api.getLessons key GotLessons
+        , Task.perform GotTimezone Time.here
         ]
     )
 
@@ -101,8 +101,48 @@ init url =
             ( initState, Cmd.none )
 
 
+viewKeyBox state =
+    Html.div
+        [ Html.Attributes.class "main" ]
+        [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review pacing" ]
+        , Html.div
+            [ Html.Attributes.class "box" ]
+            [ Html.p []
+                [ Html.text "Please enter your API version 2 key. You can find it on "
+                , Html.a
+                    [ Html.Attributes.href "https://www.wanikani.com/settings/account"
+                    , Html.Attributes.target "_blank"
+                    ]
+                    [ Html.text "your profile page" ]
+                , Html.text "."
+                ]
+            , Html.input
+                [ Html.Attributes.placeholder "API v2 key"
+                , Html.Attributes.value state.key
+                , Html.Events.onInput NewKey
+                ]
+                []
+            , Html.div [] [ state.message |> Maybe.withDefault "" |> Html.text ]
+            ]
+        ]
+
+
 update msg state =
-    ( state, Cmd.none )
+    case msg of
+        NewKey key ->
+            startLoading key
+
+        GotTimezone zone ->
+            ( { state | zone = zone }, Cmd.none )
+
+        GotLessons data nextCmd ->
+            ( { state | lessons = state.lessons ++ data }, nextCmd )
+
+        GotReviews data nextCmd ->
+            ( { state | reviews = state.reviews ++ data }, nextCmd )
+
+        _ ->
+            ( state, Cmd.none )
 
 
 subscriptions state =
@@ -110,7 +150,8 @@ subscriptions state =
 
 
 view state =
-    Html.div [] [ Html.p [] [ Html.text "LoL" ] ]
+    Html.div []
+        [ viewKeyBox state ]
 
 
 main =
