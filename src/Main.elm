@@ -1,12 +1,12 @@
 module Main exposing (main)
 
+import Api
 import Browser
 import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Html.Events
 import Http
-import Json.Decode as D
 import Lessons
 import Matrix
 import Task
@@ -18,83 +18,6 @@ import Url.Parser.Query
 
 flip f x y =
     f y x
-
-
-type Message
-    = NewKey String
-    | GotReviewsApiResponse (Result Http.Error (ApiResponse Review))
-    | GotLessonsApiResponse (Result Http.Error (ApiResponse Lesson))
-    | GotSolution (List Float)
-    | GotTimezone Time.Zone
-    | NewLessonRate String
-
-
-type alias Counts =
-    Dict ( Int, Int ) Int
-
-
-type alias Probabilities =
-    Dict ( Int, Int ) Float
-
-
-type alias LoadingState =
-    { key : String
-    , message : Maybe String
-    , counts : Counts
-    , lessons : Dict String Int
-    , zone : Maybe Time.Zone
-    , callsFinished : Int
-    }
-
-
-type alias LoadedState =
-    { probas : Probabilities
-    , reviewCount : Int
-    , rates : Maybe (List Float)
-    , lessonRate : Float
-    , lessonRateString : String
-    , lessonDates : List ( String, Int )
-    }
-
-
-type State
-    = Loading LoadingState
-    | Loaded LoadedState
-
-
-type alias PagesResponse =
-    { nextUrl : Maybe String
-    , previousUrl : Maybe String
-    , perPage : Int
-    }
-
-
-type alias ResourceResponse a =
-    { data : a }
-
-
-type alias Review =
-    { startSrs : Int
-    , endSrs : Int
-    , createdAt : String
-    }
-
-
-type alias Lesson =
-    { startedAt : Maybe String
-    }
-
-
-type alias ApiResponse a =
-    { totalCount : Int
-    , pages : PagesResponse
-    , data : List a
-    }
-
-
-type ApiUrl
-    = Route String
-    | Full String
 
 
 levelNamesFull =
@@ -135,6 +58,54 @@ levelDelays =
     ]
 
 
+type Message
+    = NewKey String
+    | GotReviews (List Api.Review) (Maybe (Cmd Message))
+    | GotLessons (List Api.Lesson) (Maybe (Cmd Message))
+    | GotSolution (List Float)
+    | GotTimezone Time.Zone
+    | NewLessonRate String
+
+
+type alias State =
+    { key : String
+    , reviews : List Api.Review
+    , lessons : List Api.Lesson
+    , zone : Time.Zone
+
+    -- computed
+    , reviewCounts : Counts
+    , probas : Probabilities
+    , rates : Maybe (List Float)
+
+    -- UI
+    , lessonRate : Float
+    , lessonRateString : String
+    }
+
+
+type alias Counts =
+    Dict ( Int, Int ) Int
+
+
+type alias Probabilities =
+    Dict ( Int, Int ) Float
+
+
+initState : State
+initState =
+    { key = ""
+    , reviews = []
+    , lessons = []
+    , zone = Time.utc
+    , reviewCounts = Dict.empty
+    , probas = Dict.empty
+    , rates = Nothing
+    , lessonRate = 10
+    , lessonRateString = "10"
+    }
+
+
 parseUrl : String -> Maybe String
 parseUrl stringUrl =
     let
@@ -162,14 +133,14 @@ parseUrl stringUrl =
         |> Maybe.andThen parse
 
 
-initState =
-    { key = ""
-    , message = Nothing
-    , counts = emptyCounts
-    , lessons = Dict.empty
-    , zone = Nothing
-    , callsFinished = 0
-    }
+startLoading key =
+    ( { initState | key = key }
+    , Cmd.batch
+        [ Api.getReviews key GotReviews
+        , Api.getLessons key GotLessons
+        , Task.perform GotTimezone Time.here
+        ]
+    )
 
 
 init : String -> ( State, Cmd Message )
@@ -179,128 +150,182 @@ init url =
             startLoading key
 
         Nothing ->
-            ( Loading initState, Cmd.none )
+            ( initState, Cmd.none )
 
 
-startLoading key =
-    ( Loading { initState | key = key, message = Just "Loading..." }
-    , Cmd.batch
-        [ getCollection key (Route "reviews") reviewDecoder GotReviewsApiResponse
-        , getCollection key (Route "assignments") lessonDecoder GotLessonsApiResponse
-        , Task.perform GotTimezone Time.here
-        ]
-    )
+accumulateReview review counts =
+    Dict.update
+        ( review.startSrs, review.endSrs )
+        (Maybe.withDefault 0 >> (+) 1 >> Just)
+        counts
 
 
-checkState loadingState =
-    case loadingState.zone of
-        Just zone ->
-            if loadingState.callsFinished == 2 then
-                let
-                    probas =
-                        fixProbabilities <| computeProbabilities loadingState.counts
-
-                    total =
-                        loadingState.counts |> Dict.values |> List.sum
-
-                    lessons =
-                        Dict.toList loadingState.lessons
-                in
-                ( Loaded (LoadedState probas total Nothing 1.0 "1" lessons)
-                , Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
-                )
-
-            else
-                ( Loading loadingState, Cmd.none )
-
-        Nothing ->
-            ( Loading loadingState, Cmd.none )
+addReviews state data =
+    let
+        newCounts =
+            List.foldr accumulateReview state.reviewCounts data
+    in
+    { state
+        | reviews = state.reviews ++ data
+        , reviewCounts = newCounts
+        , probas = newCounts |> computeProbabilities |> fixProbabilities
+    }
 
 
-update : Message -> State -> ( State, Cmd Message )
+computeProbabilities : Counts -> Probabilities
+computeProbabilities counts =
+    let
+        add : ( Int, Int ) -> Int -> Dict Int Int -> Dict Int Int
+        add ( start, end ) amount acc =
+            Dict.update
+                start
+                (Maybe.withDefault 0 >> (+) amount >> Just)
+                acc
+
+        totals =
+            Dict.foldr add Dict.empty counts
+    in
+    Dict.map
+        (\( start, end ) value ->
+            case Dict.get start totals of
+                Just total ->
+                    toFloat value / toFloat total
+
+                Nothing ->
+                    1.0
+        )
+        counts
+
+
+fixProbabilities : Probabilities -> Probabilities
+fixProbabilities probas =
+    let
+        fix : ( Int, Int ) -> Probabilities -> Probabilities
+        fix index dict =
+            Dict.update index (Just << Maybe.withDefault 1.0) dict
+    in
+    List.range 1 8
+        |> List.map (\x -> ( x, x + 1 ))
+        |> List.foldr fix probas
+
+
+computeRates probas =
+    Matrix.solve { a = Matrix.makepProblemMatrix 8 probas, b = [ -1.0, 0, 0, 0, 0, 0, 0, 0 ] }
+
+
 update msg state =
-    case ( msg, state ) of
-        ( NewKey key, _ ) ->
+    case msg of
+        NewKey key ->
             startLoading key
 
-        ( GotReviewsApiResponse (Ok resp), Loading loadingState ) ->
-            let
-                newCounts =
-                    List.foldr countReview loadingState.counts resp.data
+        GotTimezone zone ->
+            ( { state | zone = zone }, Cmd.none )
 
-                newState =
-                    { loadingState | counts = newCounts }
-            in
-            case resp.pages.nextUrl of
-                Just nextUrl ->
-                    ( Loading newState, getCollection loadingState.key (Full nextUrl) reviewDecoder GotReviewsApiResponse )
-
-                Nothing ->
-                    checkState { newState | callsFinished = newState.callsFinished + 1 }
-
-        ( GotReviewsApiResponse (Err resp), Loading loadingState ) ->
-            ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
-
-        ( GotLessonsApiResponse (Ok resp), Loading loadingState ) ->
-            let
-                newLessons =
-                    resp.data
-                        |> List.filterMap .startedAt
-                        |> List.foldl countLesson loadingState.lessons
-
-                newState =
-                    { loadingState | lessons = newLessons }
-            in
-            case resp.pages.nextUrl of
-                Just nextUrl ->
-                    ( Loading newState, getCollection loadingState.key (Full nextUrl) lessonDecoder GotLessonsApiResponse )
-
-                Nothing ->
-                    checkState { newState | callsFinished = newState.callsFinished + 1 }
-
-        ( GotLessonsApiResponse (Err resp), Loading loadingState ) ->
-            ( Loading { loadingState | message = Just "Error!" }, Cmd.none )
-
-        ( GotTimezone zone, Loading loadingState ) ->
-            checkState { loadingState | zone = Just zone }
-
-        ( GotSolution rates, Loaded loadedState ) ->
-            ( Loaded { loadedState | rates = Just rates }, Cmd.none )
-
-        ( NewLessonRate rateStr, Loaded loadedState ) ->
+        NewLessonRate rateStr ->
             let
                 newRate =
-                    rateStr |> String.toFloat |> Maybe.withDefault loadedState.lessonRate
+                    rateStr |> String.toFloat |> Maybe.withDefault state.lessonRate
             in
-            ( Loaded { loadedState | lessonRate = newRate, lessonRateString = rateStr }, Cmd.none )
+            ( { state | lessonRate = newRate, lessonRateString = rateStr }, Cmd.none )
 
-        _ ->
-            ( state, Cmd.none )
+        GotLessons data nextCmd ->
+            ( { state | lessons = state.lessons ++ data }
+            , nextCmd |> Maybe.withDefault Cmd.none
+            )
+
+        GotReviews data nextCmd ->
+            let
+                newState =
+                    addReviews state data
+            in
+            ( newState
+            , nextCmd |> Maybe.withDefault (computeRates newState.probas)
+            )
+
+        GotSolution rates ->
+            ( { state | rates = Just rates }, Cmd.none )
 
 
-viewLoading state =
+
+-- Views
+
+
+viewKeyBox state =
     Html.div
-        [ Html.Attributes.class "main" ]
-        [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review pacing" ]
-        , Html.div
-            [ Html.Attributes.class "box" ]
-            [ Html.p []
-                [ Html.text "Please enter your API version 2 key. You can find it on "
-                , Html.a
-                    [ Html.Attributes.href "https://www.wanikani.com/settings/account"
-                    , Html.Attributes.target "_blank"
-                    ]
-                    [ Html.text "your profile page" ]
-                , Html.text "."
+        [ Html.Attributes.class "box" ]
+        [ Html.p []
+            [ Html.text "Please enter your API version 2 key. You can find it on "
+            , Html.a
+                [ Html.Attributes.href "https://www.wanikani.com/settings/account"
+                , Html.Attributes.target "_blank"
                 ]
-            , Html.input
-                [ Html.Attributes.placeholder "API v2 key"
-                , Html.Attributes.value state.key
-                , Html.Events.onInput NewKey
-                ]
-                []
-            , Html.div [] [ state.message |> Maybe.withDefault "" |> Html.text ]
+                [ Html.text "your profile page" ]
+            , Html.text "."
             ]
+        , Html.input
+            [ Html.Attributes.placeholder "API v2 key"
+            , Html.Attributes.value state.key
+            , Html.Events.onInput NewKey
+            ]
+            []
+        ]
+
+
+format : Int -> Float -> String
+format n f =
+    let
+        n2 =
+            toFloat n
+    in
+    f * (10.0 ^ n2) |> round |> toFloat |> (\x -> x / 10.0 ^ n2) |> String.fromFloat
+
+
+toPercentage : Float -> String
+toPercentage f =
+    f * 100.0 |> format 2 |> flip (++) "%"
+
+
+viewProbaHeaders =
+    levelNames
+        |> List.map ((++) "To ")
+        |> (::) ""
+        |> List.map (Html.text >> List.singleton >> Html.th [])
+        |> Html.tr []
+
+
+viewProbaRow probas row =
+    List.range 1 9
+        |> List.map (\dest -> Dict.get ( row, dest ) probas)
+        |> List.map (Maybe.map toPercentage >> Maybe.withDefault "" >> Html.text >> List.singleton >> Html.td [])
+        |> (::) (Html.th [] [ List.drop (row - 1) levelNames |> List.head |> Maybe.withDefault "" |> (++) "From " |> Html.text ])
+        |> Html.tr []
+
+
+viewProbas probas =
+    Html.table
+        []
+        ([ viewProbaHeaders ] ++ (List.range 1 8 |> List.map (viewProbaRow probas)))
+
+
+viewProbasBox state =
+    Html.div
+        [ Html.Attributes.class "box" ]
+        [ Html.h2 [] [ Html.text "Accuracy" ]
+        , viewProbas state.probas
+        , Html.p [] [ Html.text <| "(based on " ++ String.fromInt (List.length state.reviews) ++ " reviews)" ]
+        ]
+
+
+viewInput state =
+    Html.div
+        [ Html.Attributes.class "box" ]
+        [ Html.h2 [] [ Html.text "Lessons per day" ]
+        , Html.input
+            [ Html.Attributes.placeholder "Lessons per day"
+            , Html.Attributes.value state.lessonRateString
+            , Html.Events.onInput NewLessonRate
+            ]
+            []
         ]
 
 
@@ -388,204 +413,42 @@ viewBurnTime rates =
         ]
 
 
-viewLoaded : LoadedState -> Html.Html Message
-viewLoaded state =
-    let
-        alwaysThere =
-            [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review pacing" ]
-            , Html.div
-                [ Html.Attributes.class "box" ]
-                [ Html.h2 [] [ Html.text "Accuracy" ]
-                , viewProbas state.probas
-                , Html.p [] [ Html.text <| "(based on " ++ String.fromInt state.reviewCount ++ " reviews)" ]
-                ]
-            , Html.div
-                [ Html.Attributes.class "box" ]
-                [ Html.h2 [] [ Html.text "Lessons per day" ]
-                , Html.input
-                    [ Html.Attributes.placeholder "Lessons per day"
-                    , Html.Attributes.value state.lessonRateString
-                    , Html.Events.onInput NewLessonRate
-                    ]
-                    []
-                ]
+viewResults state =
+    case state.rates of
+        Just rates ->
+            [ viewRates rates state.lessonRate
+            , viewQueueSizes rates state.lessonRate
+            , viewBurnTime rates
+
+            --, Lessons.view state.lessonDates
             ]
 
-        ifComputed =
-            case state.rates of
-                Just rates ->
-                    [ viewRates rates state.lessonRate
-                    , viewQueueSizes rates state.lessonRate
-                    , viewBurnTime rates
-                    , Lessons.view state.lessonDates
-                    ]
+        Nothing ->
+            []
 
-                Nothing ->
-                    []
+
+view state =
+    let
+        top =
+            [ Html.h1 [ Html.Attributes.class "box" ] [ Html.text "Wanikani accuracy and review pacing" ]
+            , viewKeyBox state
+            , viewProbasBox state
+            , viewInput state
+            ]
+
+        results =
+            viewResults state
+
+        elements =
+            top ++ results
     in
     Html.div
         [ Html.Attributes.class "main" ]
-        (alwaysThere ++ ifComputed)
-
-
-viewProbaHeaders =
-    levelNames
-        |> List.map ((++) "To ")
-        |> (::) ""
-        |> List.map (Html.text >> List.singleton >> Html.th [])
-        |> Html.tr []
-
-
-format : Int -> Float -> String
-format n f =
-    let
-        n2 =
-            toFloat n
-    in
-    f * (10.0 ^ n2) |> round |> toFloat |> (\x -> x / 10.0 ^ n2) |> String.fromFloat
-
-
-toPercentage : Float -> String
-toPercentage f =
-    f * 100.0 |> format 2 |> flip (++) "%"
-
-
-viewProbaRow probas row =
-    List.range 1 9
-        |> List.map (\dest -> Dict.get ( row, dest ) probas)
-        |> List.map (Maybe.map toPercentage >> Maybe.withDefault "" >> Html.text >> List.singleton >> Html.td [])
-        |> (::) (Html.th [] [ List.drop (row - 1) levelNames |> List.head |> Maybe.withDefault "" |> (++) "From " |> Html.text ])
-        |> Html.tr []
-
-
-viewProbas probas =
-    Html.table
-        []
-        ([ viewProbaHeaders ] ++ (List.range 1 8 |> List.map (viewProbaRow probas)))
-
-
-view : State -> Html.Html Message
-view state =
-    case state of
-        Loading st ->
-            viewLoading st
-
-        Loaded st ->
-            viewLoaded st
+        elements
 
 
 subscriptions state =
-    case state of
-        Loaded st ->
-            Matrix.solution GotSolution
-
-        _ ->
-            Sub.none
-
-
-pagesDecoder =
-    D.map3 PagesResponse
-        (D.field "next_url" (D.nullable D.string))
-        (D.field "previous_url" (D.nullable D.string))
-        (D.field "per_page" D.int)
-
-
-reviewDecoder =
-    D.map3 Review
-        (D.at [ "data", "starting_srs_stage" ] D.int)
-        (D.at [ "data", "ending_srs_stage" ] D.int)
-        (D.at [ "data", "created_at" ] D.string)
-
-
-lessonDecoder =
-    D.map Lesson
-        (D.at [ "data", "started_at" ] (D.maybe D.string))
-
-
-collectionDecoder dataDecoder =
-    D.map3 ApiResponse
-        (D.field "total_count" D.int)
-        (D.field "pages" pagesDecoder)
-        (D.field "data" (D.list dataDecoder))
-
-
-getCollection key url decoder messageCons =
-    let
-        finalUrl =
-            case url of
-                Full str ->
-                    str
-
-                Route str ->
-                    "https://api.wanikani.com/v2/" ++ str
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Authorization" ("Bearer " ++ key) ]
-                , url = finalUrl
-                , body = Http.emptyBody
-                , expect = Http.expectJson (collectionDecoder decoder)
-                , timeout = Nothing
-                , withCredentials = False
-                }
-    in
-    Http.send messageCons request
-
-
-emptyCounts =
-    Dict.empty
-
-
-countReview review counts =
-    Dict.update
-        ( review.startSrs, review.endSrs )
-        (Maybe.withDefault 0 >> (+) 1 >> Just)
-        counts
-
-
-countLesson lessonDate counts =
-    Dict.update
-        (String.left 10 lessonDate)
-        (Maybe.withDefault 0 >> (+) 1 >> Just)
-        counts
-
-
-computeProbabilities : Counts -> Probabilities
-computeProbabilities counts =
-    let
-        add : ( Int, Int ) -> Int -> Dict Int Int -> Dict Int Int
-        add ( start, end ) amount acc =
-            Dict.update
-                start
-                (Maybe.withDefault 0 >> (+) amount >> Just)
-                acc
-
-        totals =
-            Dict.foldr add Dict.empty counts
-    in
-    Dict.map
-        (\( start, end ) value ->
-            case Dict.get start totals of
-                Just total ->
-                    toFloat value / toFloat total
-
-                Nothing ->
-                    1.0
-        )
-        counts
-
-
-fixProbabilities : Probabilities -> Probabilities
-fixProbabilities probas =
-    let
-        fix : ( Int, Int ) -> Probabilities -> Probabilities
-        fix index dict =
-            Dict.update index (Just << Maybe.withDefault 1.0) dict
-    in
-    List.range 1 8
-        |> List.map (\x -> ( x, x + 1 ))
-        |> List.foldr fix probas
+    Matrix.solution GotSolution
 
 
 main =

@@ -1,6 +1,6 @@
 [
   {
     "files": "src/*.elm",
-    "command": "elm make src/Main2.elm --output main.js --optimize"
+    "command": "elm make src/Main.elm --output main.js --optimize"
   }
 ]

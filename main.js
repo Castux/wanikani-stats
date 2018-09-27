@@ -505,11 +505,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.S.A === region.Y.A)
+	if (region.W.B === region.ab.B)
 	{
-		return 'on line ' + region.S.A;
+		return 'on line ' + region.W.B;
 	}
-	return 'on lines ' + region.S.A + ' through ' + region.Y.A;
+	return 'on lines ' + region.W.B + ' through ' + region.ab.B;
 }
 
 
@@ -1853,21 +1853,21 @@ var _Http_toTask = F2(function(request, maybeProgress)
 			callback(_Scheduler_fail(elm$http$Http$Timeout));
 		});
 		xhr.addEventListener('load', function() {
-			callback(_Http_handleResponse(xhr, request.aH.a));
+			callback(_Http_handleResponse(xhr, request.aI.a));
 		});
 
 		try
 		{
-			xhr.open(request.aO, request.a2, true);
+			xhr.open(request.aP, request.a3, true);
 		}
 		catch (e)
 		{
-			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a2)));
+			return callback(_Scheduler_fail(elm$http$Http$BadUrl(request.a3)));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		var body = request.az;
+		var body = request.aA;
 		xhr.send(elm$http$Http$Internal$isStringBody(body)
 			? (xhr.setRequestHeader('Content-Type', body.a), body.b)
 			: body.a
@@ -1890,23 +1890,23 @@ function _Http_configureProgress(xhr, maybeProgress)
 			return;
 		}
 		_Scheduler_rawSpawn(maybeProgress.a({
-			aA: event.loaded,
-			aB: event.total
+			aB: event.loaded,
+			aC: event.total
 		}));
 	});
 }
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.aK; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.aL; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
 
-	xhr.responseType = request.aH.b;
-	xhr.withCredentials = request.a4;
+	xhr.responseType = request.aI.b;
+	xhr.withCredentials = request.a5;
 
-	elm$core$Maybe$isJust(request.a_) && (xhr.timeout = request.a_.a);
+	elm$core$Maybe$isJust(request.a$) && (xhr.timeout = request.a$.a);
 }
 
 
@@ -1938,10 +1938,10 @@ function _Http_handleResponse(xhr, responseToResult)
 function _Http_toResponse(xhr)
 {
 	return {
-		a2: xhr.responseURL,
-		aY: { aD: xhr.status, k: xhr.statusText },
-		aK: _Http_parseHeaders(xhr.getAllResponseHeaders()),
-		az: xhr.response
+		a3: xhr.responseURL,
+		aZ: { aE: xhr.status, k: xhr.statusText },
+		aL: _Http_parseHeaders(xhr.getAllResponseHeaders()),
+		aA: xhr.response
 	};
 }
 
@@ -2040,9 +2040,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aN,
-		impl.a1,
-		impl.aZ,
+		impl.aO,
+		impl.a2,
+		impl.a_,
 		function() { return function() {} }
 	);
 });
@@ -2889,8 +2889,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		k: func(record.k),
-		T: record.T,
-		R: record.R
+		X: record.X,
+		V: record.V
 	}
 });
 
@@ -3159,10 +3159,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.k;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.T;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.X;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.R) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.V) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -4108,11 +4108,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aN,
-		impl.a1,
-		impl.aZ,
+		impl.aO,
+		impl.a2,
+		impl.a_,
 		function(sendToApp, initialModel) {
-			var view = impl.a3;
+			var view = impl.a4;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4144,12 +4144,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aN,
-		impl.a1,
-		impl.aZ,
+		impl.aO,
+		impl.a2,
+		impl.a_,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.D && impl.D(sendToApp)
-			var view = impl.a3;
+			var divertHrefToApp = impl.E && impl.E(sendToApp)
+			var view = impl.a4;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4157,12 +4157,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.az);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aA);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.a$) && (_VirtualDom_doc.title = title = doc.a$);
+				(title !== doc.a0) && (_VirtualDom_doc.title = title = doc.a0);
 			});
 		}
 	);
@@ -4213,12 +4213,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aQ;
-	var onUrlRequest = impl.aR;
+	var onUrlChange = impl.aR;
+	var onUrlRequest = impl.aS;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		D: function(sendToApp)
+		E: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4234,9 +4234,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.am === next.am
-							&& curr.aa === next.aa
-							&& curr.aj.a === next.aj.a
+							&& curr.ao === next.ao
+							&& curr.ae === next.ae
+							&& curr.al.a === next.al.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4244,13 +4244,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aN: function(flags)
+		aO: function(flags)
 		{
-			return A3(impl.aN, flags, _Browser_getUrl(), key);
+			return A3(impl.aO, flags, _Browser_getUrl(), key);
 		},
-		a3: impl.a3,
-		a1: impl.a1,
-		aZ: impl.aZ
+		a4: impl.a4,
+		a2: impl.a2,
+		a_: impl.a_
 	});
 }
 
@@ -4316,17 +4316,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aL: 'hidden', z: 'visibilitychange' }
+		? { aM: 'hidden', A: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aL: 'mozHidden', z: 'mozvisibilitychange' }
+		? { aM: 'mozHidden', A: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aL: 'msHidden', z: 'msvisibilitychange' }
+		? { aM: 'msHidden', A: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aL: 'webkitHidden', z: 'webkitvisibilitychange' }
-		: { aL: 'hidden', z: 'visibilitychange' };
+		? { aM: 'webkitHidden', A: 'webkitvisibilitychange' }
+		: { aM: 'hidden', A: 'visibilitychange' };
 }
 
 
@@ -4407,11 +4407,11 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		ar: _Browser_getScene(),
-		au: {
-			M: _Browser_window.pageXOffset,
-			N: _Browser_window.pageYOffset,
-			x: _Browser_doc.documentElement.clientWidth,
+		as: _Browser_getScene(),
+		av: {
+			Q: _Browser_window.pageXOffset,
+			R: _Browser_window.pageYOffset,
+			y: _Browser_doc.documentElement.clientWidth,
 			s: _Browser_doc.documentElement.clientHeight
 		}
 	};
@@ -4422,7 +4422,7 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		x: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		y: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
 		s: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
@@ -4446,14 +4446,14 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			ar: {
-				x: node.scrollWidth,
+			as: {
+				y: node.scrollWidth,
 				s: node.scrollHeight
 			},
-			au: {
-				M: node.scrollLeft,
-				N: node.scrollTop,
-				x: node.clientWidth,
+			av: {
+				Q: node.scrollLeft,
+				R: node.scrollTop,
+				y: node.clientWidth,
 				s: node.clientHeight
 			}
 		};
@@ -4484,17 +4484,17 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			ar: _Browser_getScene(),
-			au: {
-				M: x,
-				N: y,
-				x: _Browser_doc.documentElement.clientWidth,
+			as: _Browser_getScene(),
+			av: {
+				Q: x,
+				R: y,
+				y: _Browser_doc.documentElement.clientWidth,
 				s: _Browser_doc.documentElement.clientHeight
 			},
-			aF: {
-				M: x + rect.left,
-				N: y + rect.top,
-				x: rect.width,
+			aG: {
+				Q: x + rect.left,
+				R: y + rect.top,
+				y: rect.width,
 				s: rect.height
 			}
 		};
@@ -4618,7 +4618,7 @@ var elm$time$Time$Zone = F2(
 		return {$: 0, a: a, b: b};
 	});
 var elm$time$Time$utc = A2(elm$time$Time$Zone, 0, _List_Nil);
-var author$project$Main$initState = {K: '', ab: 10, ac: '10', L: _List_Nil, ao: elm$core$Maybe$Nothing, B: elm$core$Dict$empty, C: _List_Nil, U: elm$time$Time$utc};
+var author$project$Main$initState = {L: '', t: 10, M: '10', N: _List_Nil, C: elm$core$Dict$empty, O: elm$core$Maybe$Nothing, P: elm$core$Dict$empty, D: _List_Nil, Y: elm$time$Time$utc};
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
@@ -4668,7 +4668,7 @@ var elm$core$String$contains = _String_contains;
 var elm$core$String$toInt = _String_toInt;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {_: fragment, aa: host, ah: path, aj: port_, am: protocol, an: query};
+		return {ad: fragment, ae: host, aj: path, al: port_, ao: protocol, ap: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -5558,9 +5558,9 @@ var elm$url$Url$Parser$parse = F2(
 				A5(
 					elm$url$Url$Parser$State,
 					_List_Nil,
-					elm$url$Url$Parser$preparePath(url.ah),
-					elm$url$Url$Parser$prepareQuery(url.an),
-					url._,
+					elm$url$Url$Parser$preparePath(url.aj),
+					elm$url$Url$Parser$prepareQuery(url.ap),
+					url.ad,
 					elm$core$Basics$identity)));
 	});
 var elm$url$Url$Parser$query = function (_n0) {
@@ -5711,11 +5711,11 @@ var author$project$Api$Full = function (a) {
 };
 var author$project$Api$ApiResponse = F3(
 	function (totalCount, pages, data) {
-		return {O: data, ag: pages, a0: totalCount};
+		return {S: data, ai: pages, a1: totalCount};
 	});
 var author$project$Api$PagesResponse = F3(
 	function (nextUrl, previousUrl, perPage) {
-		return {ae: nextUrl, aT: perPage, aU: previousUrl};
+		return {ag: nextUrl, aU: perPage, aV: previousUrl};
 	});
 var elm$core$Array$branchFactor = 32;
 var elm$core$Array$Array_elm_builtin = F4(
@@ -6154,7 +6154,7 @@ var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var elm$http$Http$expectJson = function (decoder) {
 	return elm$http$Http$expectStringResponse(
 		function (response) {
-			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.az);
+			var _n0 = A2(elm$json$Json$Decode$decodeString, decoder, response.aA);
 			if (_n0.$ === 1) {
 				var decodeError = _n0.a;
 				return elm$core$Result$Err(
@@ -6284,12 +6284,12 @@ var author$project$Api$getCollection = F4(
 				return A2(messageCons, _List_Nil, elm$core$Maybe$Nothing);
 			} else {
 				var payload = response.a;
-				var _n2 = payload.ag.ae;
+				var _n2 = payload.ai.ag;
 				if (!_n2.$) {
 					var nextUrl = _n2.a;
 					return A2(
 						messageCons,
-						payload.O,
+						payload.S,
 						elm$core$Maybe$Just(
 							A4(
 								author$project$Api$getCollection,
@@ -6298,7 +6298,7 @@ var author$project$Api$getCollection = F4(
 								decoder,
 								messageCons)));
 				} else {
-					return A2(messageCons, payload.O, elm$core$Maybe$Nothing);
+					return A2(messageCons, payload.S, elm$core$Maybe$Nothing);
 				}
 			}
 		};
@@ -6313,22 +6313,22 @@ var author$project$Api$getCollection = F4(
 		}();
 		var request = elm$http$Http$request(
 			{
-				az: elm$http$Http$emptyBody,
-				aH: elm$http$Http$expectJson(
+				aA: elm$http$Http$emptyBody,
+				aI: elm$http$Http$expectJson(
 					author$project$Api$collectionDecoder(decoder)),
-				aK: _List_fromArray(
+				aL: _List_fromArray(
 					[
 						A2(elm$http$Http$header, 'Authorization', 'Bearer ' + key)
 					]),
-				aO: 'GET',
-				a_: elm$core$Maybe$Nothing,
-				a2: finalUrl,
-				a4: false
+				aP: 'GET',
+				a$: elm$core$Maybe$Nothing,
+				a3: finalUrl,
+				a5: false
 			});
 		return A2(elm$http$Http$send, responseHandler, request);
 	});
 var author$project$Api$Lesson = function (startedAt) {
-	return {aX: startedAt};
+	return {aY: startedAt};
 };
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
@@ -6362,7 +6362,7 @@ var author$project$Api$getLessons = F2(
 	});
 var author$project$Api$Review = F3(
 	function (startSrs, endSrs, createdAt) {
-		return {aE: createdAt, aG: endSrs, aW: startSrs};
+		return {aF: createdAt, aH: endSrs, aX: startSrs};
 	});
 var author$project$Api$reviewDecoder = A4(
 	elm$json$Json$Decode$map3,
@@ -6420,7 +6420,7 @@ var author$project$Main$startLoading = function (key) {
 	return _Utils_Tuple2(
 		_Utils_update(
 			author$project$Main$initState,
-			{K: key}),
+			{L: key}),
 		elm$core$Platform$Cmd$batch(
 			_List_fromArray(
 				[
@@ -6439,10 +6439,15 @@ var author$project$Main$init = function (url) {
 		return _Utils_Tuple2(author$project$Main$initState, elm$core$Platform$Cmd$none);
 	}
 };
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var author$project$Main$GotSolution = function (a) {
+	return {$: 3, a: a};
+};
+var elm$json$Json$Decode$float = _Json_decodeFloat;
+var author$project$Matrix$solution = _Platform_incomingPort(
+	'solution',
+	elm$json$Json$Decode$list(elm$json$Json$Decode$float));
 var author$project$Main$subscriptions = function (state) {
-	return elm$core$Platform$Sub$none;
+	return author$project$Matrix$solution(author$project$Main$GotSolution);
 };
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -6453,7 +6458,7 @@ var author$project$Main$accumulateReview = F2(
 	function (review, counts) {
 		return A3(
 			elm$core$Dict$update,
-			_Utils_Tuple2(review.aW, review.aG),
+			_Utils_Tuple2(review.aX, review.aH),
 			A2(
 				elm$core$Basics$composeR,
 				elm$core$Maybe$withDefault(0),
@@ -6463,155 +6468,6 @@ var author$project$Main$accumulateReview = F2(
 					elm$core$Maybe$Just)),
 			counts);
 	});
-var author$project$Main$addReviews = F2(
-	function (state, data) {
-		return _Utils_update(
-			state,
-			{
-				B: A3(elm$core$List$foldr, author$project$Main$accumulateReview, state.B, data),
-				C: _Utils_ap(state.C, data)
-			});
-	});
-var author$project$Main$update = F2(
-	function (msg, state) {
-		switch (msg.$) {
-			case 0:
-				var key = msg.a;
-				return author$project$Main$startLoading(key);
-			case 4:
-				var zone = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						state,
-						{U: zone}),
-					elm$core$Platform$Cmd$none);
-			case 2:
-				var data = msg.a;
-				var nextCmd = msg.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						state,
-						{
-							L: _Utils_ap(state.L, data)
-						}),
-					A2(elm$core$Maybe$withDefault, elm$core$Platform$Cmd$none, nextCmd));
-			case 1:
-				var data = msg.a;
-				var nextCmd = msg.b;
-				return _Utils_Tuple2(
-					A2(author$project$Main$addReviews, state, data),
-					A2(elm$core$Maybe$withDefault, elm$core$Platform$Cmd$none, nextCmd));
-			default:
-				return _Utils_Tuple2(state, elm$core$Platform$Cmd$none);
-		}
-	});
-var author$project$Main$NewKey = function (a) {
-	return {$: 0, a: a};
-};
-var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
-	switch (handler.$) {
-		case 0:
-			return 0;
-		case 1:
-			return 1;
-		case 2:
-			return 2;
-		default:
-			return 3;
-	}
-};
-var elm$html$Html$a = _VirtualDom_node('a');
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$input = _VirtualDom_node('input');
-var elm$html$Html$p = _VirtualDom_node('p');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
-var elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
-var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
-var elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 1, a: a};
-};
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var elm$html$Html$Events$targetValue = A2(
-	elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	elm$json$Json$Decode$string);
-var elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			elm$json$Json$Decode$map,
-			elm$html$Html$Events$alwaysStop,
-			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
-};
-var author$project$Main$viewKeyBox = function (state) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('box')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Please enter your API version 2 key. You can find it on '),
-						A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$href('https://www.wanikani.com/settings/account'),
-								elm$html$Html$Attributes$target('_blank')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('your profile page')
-							])),
-						elm$html$Html$text('.')
-					])),
-				A2(
-				elm$html$Html$input,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$placeholder('API v2 key'),
-						elm$html$Html$Attributes$value(state.K),
-						elm$html$Html$Events$onInput(author$project$Main$NewKey)
-					]),
-				_List_Nil)
-			]));
-};
 var elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === -2) {
@@ -6687,6 +6543,281 @@ var author$project$Main$fixProbabilities = function (probas) {
 				return _Utils_Tuple2(x, x + 1);
 			},
 			A2(elm$core$List$range, 1, 8)));
+};
+var author$project$Main$addReviews = F2(
+	function (state, data) {
+		var newCounts = A3(elm$core$List$foldr, author$project$Main$accumulateReview, state.P, data);
+		return _Utils_update(
+			state,
+			{
+				C: author$project$Main$fixProbabilities(
+					author$project$Main$computeProbabilities(newCounts)),
+				P: newCounts,
+				D: _Utils_ap(state.D, data)
+			});
+	});
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var author$project$Matrix$makepProblemMatrix = F2(
+	function (size, values) {
+		return A2(
+			elm$core$List$map,
+			function (row) {
+				return A2(
+					elm$core$List$map,
+					function (col) {
+						return A2(
+							elm$core$Maybe$withDefault,
+							0.0,
+							A2(
+								elm$core$Dict$get,
+								_Utils_Tuple2(col, row),
+								values)) + (_Utils_eq(row, col) ? (-1.0) : 0.0);
+					},
+					A2(elm$core$List$range, 1, size));
+			},
+			A2(elm$core$List$range, 1, size));
+	});
+var elm$json$Json$Encode$float = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(0),
+				entries));
+	});
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(0),
+			pairs));
+};
+var author$project$Matrix$solve = _Platform_outgoingPort(
+	'solve',
+	function ($) {
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'a',
+					elm$json$Json$Encode$list(
+						elm$json$Json$Encode$list(elm$json$Json$Encode$float))($.ax)),
+					_Utils_Tuple2(
+					'b',
+					elm$json$Json$Encode$list(elm$json$Json$Encode$float)($.az))
+				]));
+	});
+var author$project$Main$computeRates = function (probas) {
+	return author$project$Matrix$solve(
+		{
+			ax: A2(author$project$Matrix$makepProblemMatrix, 8, probas),
+			az: _List_fromArray(
+				[-1.0, 0, 0, 0, 0, 0, 0, 0])
+		});
+};
+var elm$core$String$toFloat = _String_toFloat;
+var author$project$Main$update = F2(
+	function (msg, state) {
+		switch (msg.$) {
+			case 0:
+				var key = msg.a;
+				return author$project$Main$startLoading(key);
+			case 4:
+				var zone = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{Y: zone}),
+					elm$core$Platform$Cmd$none);
+			case 5:
+				var rateStr = msg.a;
+				var newRate = A2(
+					elm$core$Maybe$withDefault,
+					state.t,
+					elm$core$String$toFloat(rateStr));
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{t: newRate, M: rateStr}),
+					elm$core$Platform$Cmd$none);
+			case 2:
+				var data = msg.a;
+				var nextCmd = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{
+							N: _Utils_ap(state.N, data)
+						}),
+					A2(elm$core$Maybe$withDefault, elm$core$Platform$Cmd$none, nextCmd));
+			case 1:
+				var data = msg.a;
+				var nextCmd = msg.b;
+				var newState = A2(author$project$Main$addReviews, state, data);
+				return _Utils_Tuple2(
+					newState,
+					A2(
+						elm$core$Maybe$withDefault,
+						author$project$Main$computeRates(newState.C),
+						nextCmd));
+			default:
+				var rates = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{
+							O: elm$core$Maybe$Just(rates)
+						}),
+					elm$core$Platform$Cmd$none);
+		}
+	});
+var author$project$Main$NewLessonRate = function (a) {
+	return {$: 5, a: a};
+};
+var elm$json$Json$Decode$map2 = _Json_map2;
+var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 0:
+			return 0;
+		case 1:
+			return 1;
+		case 2:
+			return 2;
+		default:
+			return 3;
+	}
+};
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$input = _VirtualDom_node('input');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 1, a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var elm$html$Html$Events$targetValue = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	elm$json$Json$Decode$string);
+var elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			elm$json$Json$Decode$map,
+			elm$html$Html$Events$alwaysStop,
+			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+};
+var author$project$Main$viewInput = function (state) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('box')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Lessons per day')
+					])),
+				A2(
+				elm$html$Html$input,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$placeholder('Lessons per day'),
+						elm$html$Html$Attributes$value(state.M),
+						elm$html$Html$Events$onInput(author$project$Main$NewLessonRate)
+					]),
+				_List_Nil)
+			]));
+};
+var author$project$Main$NewKey = function (a) {
+	return {$: 0, a: a};
+};
+var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$p = _VirtualDom_node('p');
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
+var author$project$Main$viewKeyBox = function (state) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('box')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Please enter your API version 2 key. You can find it on '),
+						A2(
+						elm$html$Html$a,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$href('https://www.wanikani.com/settings/account'),
+								elm$html$Html$Attributes$target('_blank')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('your profile page')
+							])),
+						elm$html$Html$text('.')
+					])),
+				A2(
+				elm$html$Html$input,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$placeholder('API v2 key'),
+						elm$html$Html$Attributes$value(state.L),
+						elm$html$Html$Events$onInput(author$project$Main$NewKey)
+					]),
+				_List_Nil)
+			]));
 };
 var author$project$Main$levelNames = _List_fromArray(
 	['A1', 'A2', 'A3', 'A4', 'G1', 'G2', 'M', 'E', 'burned']);
@@ -6837,7 +6968,6 @@ var author$project$Main$viewProbas = function (probas) {
 				author$project$Main$viewProbaRow(probas),
 				A2(elm$core$List$range, 1, 8))));
 };
-var elm$html$Html$h2 = _VirtualDom_node('h2');
 var author$project$Main$viewProbasBox = function (state) {
 	return A2(
 		elm$html$Html$div,
@@ -6854,9 +6984,7 @@ var author$project$Main$viewProbasBox = function (state) {
 					[
 						elm$html$Html$text('Accuracy')
 					])),
-				author$project$Main$viewProbas(
-				author$project$Main$fixProbabilities(
-					author$project$Main$computeProbabilities(state.B))),
+				author$project$Main$viewProbas(state.C),
 				A2(
 				elm$html$Html$p,
 				_List_Nil,
@@ -6864,33 +6992,416 @@ var author$project$Main$viewProbasBox = function (state) {
 					[
 						elm$html$Html$text(
 						'(based on ' + (elm$core$String$fromInt(
-							elm$core$List$length(state.C)) + ' reviews)'))
+							elm$core$List$length(state.D)) + ' reviews)'))
 					]))
 			]));
 };
+var author$project$Main$levelDelays = _List_fromArray(
+	[4.0 / 24.0, 8.0 / 24.0, 1.0, 2.0, 7.0, 14.0, 30.0, 120.0]);
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
+};
+var elm$html$Html$b = _VirtualDom_node('b');
+var author$project$Main$viewBurnTime = function (rates) {
+	var totalSize = elm$core$List$sum(
+		A3(elm$core$List$map2, elm$core$Basics$mul, rates, author$project$Main$levelDelays));
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('box')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Time to burn')
+					])),
+				A2(
+				elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$b,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Average burn time: ')
+							])),
+						elm$html$Html$text(
+						A3(
+							author$project$Main$flip,
+							elm$core$Basics$append,
+							' days',
+							A2(author$project$Main$format, 2, totalSize)))
+					]))
+			]));
+};
+var elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2(elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return elm$core$List$reverse(
+			A3(elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _n0 = _Utils_Tuple2(n, list);
+			_n0$1:
+			while (true) {
+				_n0$5:
+				while (true) {
+					if (!_n0.b.b) {
+						return list;
+					} else {
+						if (_n0.b.b.b) {
+							switch (_n0.a) {
+								case 1:
+									break _n0$1;
+								case 2:
+									var _n2 = _n0.b;
+									var x = _n2.a;
+									var _n3 = _n2.b;
+									var y = _n3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_n0.b.b.b.b) {
+										var _n4 = _n0.b;
+										var x = _n4.a;
+										var _n5 = _n4.b;
+										var y = _n5.a;
+										var _n6 = _n5.b;
+										var z = _n6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _n0$5;
+									}
+								default:
+									if (_n0.b.b.b.b && _n0.b.b.b.b.b) {
+										var _n7 = _n0.b;
+										var x = _n7.a;
+										var _n8 = _n7.b;
+										var y = _n8.a;
+										var _n9 = _n8.b;
+										var z = _n9.a;
+										var _n10 = _n9.b;
+										var w = _n10.a;
+										var tl = _n10.b;
+										return (ctr > 1000) ? A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A2(elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A3(elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _n0$5;
+									}
+							}
+						} else {
+							if (_n0.a === 1) {
+								break _n0$1;
+							} else {
+								break _n0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _n1 = _n0.b;
+			var x = _n1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var elm$core$List$take = F2(
+	function (n, list) {
+		return A3(elm$core$List$takeFast, 0, n, list);
+	});
+var author$project$Main$viewQueueSizes = F2(
+	function (rates, lessonRate) {
+		var sizes = A2(
+			elm$core$List$map,
+			elm$core$Basics$mul(lessonRate),
+			A3(elm$core$List$map2, elm$core$Basics$mul, rates, author$project$Main$levelDelays));
+		var queuesRow = A2(
+			elm$html$Html$tr,
+			_List_Nil,
+			A2(
+				elm$core$List$map,
+				A2(
+					elm$core$Basics$composeR,
+					author$project$Main$format(2),
+					A2(
+						elm$core$Basics$composeR,
+						elm$html$Html$text,
+						A2(
+							elm$core$Basics$composeR,
+							elm$core$List$singleton,
+							elm$html$Html$td(_List_Nil)))),
+				sizes));
+		var headersRow = A2(
+			elm$html$Html$tr,
+			_List_Nil,
+			A2(
+				elm$core$List$map,
+				A2(
+					elm$core$Basics$composeR,
+					elm$html$Html$text,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$List$singleton,
+						elm$html$Html$th(_List_Nil))),
+				A2(elm$core$List$take, 8, author$project$Main$levelNames)));
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('box')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h2,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Average number of non burned items')
+						])),
+					A2(
+					elm$html$Html$table,
+					_List_Nil,
+					_List_fromArray(
+						[headersRow, queuesRow])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$b,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Apprentice: ')
+								])),
+							elm$html$Html$text(
+							A2(
+								author$project$Main$format,
+								2,
+								elm$core$List$sum(
+									A2(elm$core$List$take, 4, sizes))))
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$b,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Total: ')
+								])),
+							elm$html$Html$text(
+							A2(
+								author$project$Main$format,
+								2,
+								elm$core$List$sum(sizes)))
+						]))
+				]));
+	});
+var author$project$Main$viewRates = F2(
+	function (rates, lessonRate) {
+		var ratesRow = A2(
+			elm$html$Html$tr,
+			_List_Nil,
+			A2(
+				elm$core$List$map,
+				A2(
+					elm$core$Basics$composeR,
+					elm$core$Basics$mul(lessonRate),
+					A2(
+						elm$core$Basics$composeR,
+						author$project$Main$format(2),
+						A2(
+							elm$core$Basics$composeR,
+							elm$html$Html$text,
+							A2(
+								elm$core$Basics$composeR,
+								elm$core$List$singleton,
+								elm$html$Html$td(_List_Nil))))),
+				rates));
+		var headersRow = A2(
+			elm$html$Html$tr,
+			_List_Nil,
+			A2(
+				elm$core$List$map,
+				A2(
+					elm$core$Basics$composeR,
+					elm$html$Html$text,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$List$singleton,
+						elm$html$Html$th(_List_Nil))),
+				A2(elm$core$List$take, 8, author$project$Main$levelNames)));
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('box')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$h2,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('Reviews per day')
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text('(to keep up with the lessons)')
+						])),
+					A2(
+					elm$html$Html$table,
+					_List_Nil,
+					_List_fromArray(
+						[headersRow, ratesRow])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$b,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Apprentice: ')
+								])),
+							elm$html$Html$text(
+							A2(
+								author$project$Main$format,
+								2,
+								lessonRate * elm$core$List$sum(
+									A2(elm$core$List$take, 4, rates))))
+						])),
+					A2(
+					elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$b,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text('Total: ')
+								])),
+							elm$html$Html$text(
+							A2(
+								author$project$Main$format,
+								2,
+								lessonRate * elm$core$List$sum(rates)))
+						]))
+				]));
+	});
+var author$project$Main$viewResults = function (state) {
+	var _n0 = state.O;
+	if (!_n0.$) {
+		var rates = _n0.a;
+		return _List_fromArray(
+			[
+				A2(author$project$Main$viewRates, rates, state.t),
+				A2(author$project$Main$viewQueueSizes, rates, state.t),
+				author$project$Main$viewBurnTime(rates)
+			]);
+	} else {
+		return _List_Nil;
+	}
+};
 var elm$html$Html$h1 = _VirtualDom_node('h1');
 var author$project$Main$view = function (state) {
+	var top = _List_fromArray(
+		[
+			A2(
+			elm$html$Html$h1,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('box')
+				]),
+			_List_fromArray(
+				[
+					elm$html$Html$text('Wanikani accuracy and review pacing')
+				])),
+			author$project$Main$viewKeyBox(state),
+			author$project$Main$viewProbasBox(state),
+			author$project$Main$viewInput(state)
+		]);
+	var results = author$project$Main$viewResults(state);
+	var elements = _Utils_ap(top, results);
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$class('main')
 			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$h1,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('box')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('Wanikani accuracy and review pacing')
-					])),
-				author$project$Main$viewKeyBox(state),
-				author$project$Main$viewProbasBox(state)
-			]));
+		elements);
 };
 var elm$browser$Browser$External = function (a) {
 	return {$: 1, a: a};
@@ -6910,5 +7421,5 @@ var elm$core$Basics$never = function (_n0) {
 };
 var elm$browser$Browser$element = _Browser_element;
 var author$project$Main$main = elm$browser$Browser$element(
-	{aN: author$project$Main$init, aZ: author$project$Main$subscriptions, a1: author$project$Main$update, a3: author$project$Main$view});
+	{aO: author$project$Main$init, a_: author$project$Main$subscriptions, a2: author$project$Main$update, a4: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$string)(0)}});}(this));
