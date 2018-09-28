@@ -1,7 +1,9 @@
 module Api exposing (Lesson, Review, getLessons, getReviews)
 
 import Http
+import ISO8601
 import Json.Decode as D
+import Time
 
 
 type alias PagesResponse =
@@ -19,7 +21,7 @@ type alias Review =
 
 
 type alias Lesson =
-    { startedAt : Maybe String
+    { startedAt : Maybe Time.Posix
     }
 
 
@@ -33,6 +35,16 @@ type alias ApiResponse a =
 type ApiUrl
     = Route String
     | Full String
+
+
+treatString : String -> Maybe Time.Posix
+treatString string =
+    case ISO8601.fromString string of
+        Ok time ->
+            Just (ISO8601.toPosix time)
+
+        _ ->
+            Nothing
 
 
 pagesDecoder =
@@ -50,7 +62,7 @@ reviewDecoder =
 
 
 lessonDecoder =
-    D.map Lesson
+    D.map (Maybe.andThen treatString >> Lesson)
         (D.at [ "data", "started_at" ] (D.maybe D.string))
 
 

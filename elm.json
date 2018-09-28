@@ -12,9 +12,11 @@
             "elm/http": "1.0.0",
             "elm/json": "1.0.0",
             "elm/time": "1.0.0",
-            "elm/url": "1.0.0"
+            "elm/url": "1.0.0",
+            "jweir/elm-iso8601": "5.0.2"
         },
         "indirect": {
+            "elm/regex": "1.0.0",
             "elm/virtual-dom": "1.0.0"
         }
     },

@@ -4,6 +4,7 @@ import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Html.Events
+import Lessons
 import State exposing (..)
 
 
@@ -242,8 +243,11 @@ view state =
         results =
             viewResults state
 
+        lessons =
+            [ Lessons.view state.zone state.lessons ]
+
         elements =
-            top ++ results
+            top ++ results ++ lessons
     in
     Html.div
         [ Html.Attributes.class "main" ]
