@@ -7572,9 +7572,21 @@ var author$project$Lessons$groupByDay = F2(
 							elm$core$List$map,
 							elm$core$Basics$mul(author$project$Lessons$millisPerDay),
 							A2(elm$core$List$range, 0, (((lastDay - firstDay) / author$project$Lessons$millisPerDay) | 0) + 1))))));
-		return fixed;
+		return elm$core$Dict$toList(fixed);
 	});
-var elm$core$Debug$toString = _Debug_toString;
+var author$project$Lessons$barWidth = 10;
+var author$project$Lessons$maxHeight = 70;
+var elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(
+			A3(elm$core$List$foldl, elm$core$Basics$max, x, xs));
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$String$fromFloat = _String_fromNumber;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
@@ -7588,9 +7600,58 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
+var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var author$project$Lessons$makeGraph = function (days) {
+	var w = elm$core$String$fromInt(
+		elm$core$List$length(days) * author$project$Lessons$barWidth);
+	var highest = A2(
+		elm$core$Maybe$withDefault,
+		10,
+		elm$core$List$maximum(
+			A2(
+				elm$core$List$map,
+				A2(elm$core$Basics$composeR, elm$core$Tuple$second, elm$core$List$length),
+				days)));
+	var h = elm$core$String$fromInt(author$project$Lessons$maxHeight);
+	var drawBar = F2(
+		function (index, _n0) {
+			var triplet = _n0.a;
+			var lessons = _n0.b;
+			return A2(
+				elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x(
+						elm$core$String$fromInt(index * author$project$Lessons$barWidth)),
+						elm$svg$Svg$Attributes$y('0'),
+						elm$svg$Svg$Attributes$width(
+						elm$core$String$fromInt(author$project$Lessons$barWidth - 1)),
+						elm$svg$Svg$Attributes$height(
+						elm$core$String$fromFloat(
+							(elm$core$List$length(lessons) / highest) * author$project$Lessons$maxHeight))
+					]),
+				_List_Nil);
+		});
+	var bars = A2(
+		elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				elm$svg$Svg$Attributes$width(w),
+				elm$svg$Svg$Attributes$height(h),
+				elm$svg$Svg$Attributes$viewBox('0 0 ' + (w + (' ' + h)))
+			]),
+		A2(elm$core$List$indexedMap, drawBar, days));
+	return bars;
+};
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h2 = _VirtualDom_node('h2');
-var elm$html$Html$p = _VirtualDom_node('p');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$json$Json$Encode$string = _Json_wrap;
@@ -7604,17 +7665,7 @@ var elm$html$Html$Attributes$stringProperty = F2(
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var author$project$Lessons$view = F2(
 	function (zone, lessons) {
-		var days = A2(
-			elm$core$List$map,
-			function (_n0) {
-				var k = _n0.a;
-				var v = _n0.b;
-				return _Utils_Tuple2(
-					k,
-					elm$core$List$length(v));
-			},
-			elm$core$Dict$toList(
-				A2(author$project$Lessons$groupByDay, zone, lessons)));
+		var days = A2(author$project$Lessons$groupByDay, zone, lessons);
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -7630,14 +7681,7 @@ var author$project$Lessons$view = F2(
 						[
 							elm$html$Html$text('Lessons history')
 						])),
-					A2(
-					elm$html$Html$p,
-					_List_Nil,
-					_List_fromArray(
-						[
-							elm$html$Html$text(
-							elm$core$Debug$toString(days))
-						]))
+					author$project$Lessons$makeGraph(days)
 				]));
 	});
 var author$project$State$NewLessonRate = function (a) {
@@ -7705,6 +7749,7 @@ var author$project$State$NewKey = function (a) {
 	return {$: 'NewKey', a: a};
 };
 var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -7783,7 +7828,6 @@ var author$project$View$flip = F3(
 		return A2(f, y, x);
 	});
 var elm$core$Basics$pow = _Basics_pow;
-var elm$core$String$fromFloat = _String_fromNumber;
 var author$project$View$format = F2(
 	function (n, f) {
 		var n2 = n;
