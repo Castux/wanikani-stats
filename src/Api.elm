@@ -22,6 +22,8 @@ type alias Review =
 
 type alias Lesson =
     { startedAt : Maybe Time.Posix
+    , subjectId : Int
+    , subjectType : String
     }
 
 
@@ -62,8 +64,13 @@ reviewDecoder =
 
 
 lessonDecoder =
-    D.map (Maybe.andThen treatString >> Lesson)
-        (D.at [ "data", "started_at" ] (D.maybe D.string))
+    D.map3 Lesson
+        (D.map
+            (Maybe.andThen treatString)
+            (D.at [ "data", "started_at" ] (D.maybe D.string))
+        )
+        (D.at [ "data", "subject_id" ] D.int)
+        (D.at [ "data", "subject_type" ] D.string)
 
 
 collectionDecoder dataDecoder =
