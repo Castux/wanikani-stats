@@ -6439,7 +6439,7 @@ var author$project$Api$getCollection = F4(
 				return A2(messageCons, _List_Nil, elm$core$Maybe$Nothing);
 			} else {
 				var payload = response.a;
-				var _n2 = elm$core$Maybe$Nothing;
+				var _n2 = payload.pages.nextUrl;
 				if (_n2.$ === 'Just') {
 					var nextUrl = _n2.a;
 					return A2(
@@ -7264,6 +7264,7 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 		}
 	});
+var author$project$Lessons$millisPerDay = (1000 * 3600) * 24;
 var author$project$Lessons$toNumericalMonth = function (month) {
 	switch (month.$) {
 		case 'Jan':
@@ -7430,8 +7431,60 @@ var elm$core$List$filterMap = F2(
 			_List_Nil,
 			xs);
 	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var elm_community$list_extra$List$Extra$last = function (items) {
+	last:
+	while (true) {
+		if (!items.b) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			if (!items.b.b) {
+				var x = items.a;
+				return elm$core$Maybe$Just(x);
+			} else {
+				var rest = items.b;
+				var $temp$items = rest;
+				items = $temp$items;
+				continue last;
+			}
+		}
+	}
+};
 var author$project$Lessons$groupByDay = F2(
 	function (zone, lessons) {
+		var insertEmpty = F2(
+			function (triplet, dict) {
+				return A3(
+					elm$core$Dict$update,
+					triplet,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Maybe$withDefault(_List_Nil),
+						elm$core$Maybe$Just),
+					dict);
+			});
 		var insert = F2(
 			function (_n1, dict) {
 				var triplet = _n1.a;
@@ -7464,7 +7517,62 @@ var author$project$Lessons$groupByDay = F2(
 			},
 			lessons);
 		var grouped = A3(elm$core$List$foldl, insert, elm$core$Dict$empty, decorated);
-		return grouped;
+		var firstDay = A2(
+			elm$core$Maybe$withDefault,
+			0,
+			A2(
+				elm$core$Maybe$map,
+				elm$time$Time$posixToMillis,
+				A2(
+					elm$core$Maybe$andThen,
+					function ($) {
+						return $.startedAt;
+					},
+					A2(
+						elm$core$Maybe$andThen,
+						elm$core$List$head,
+						A2(
+							elm$core$Maybe$map,
+							elm$core$Tuple$second,
+							elm$core$List$head(
+								elm$core$Dict$toList(grouped)))))));
+		var lastDay = A2(
+			elm$core$Maybe$withDefault,
+			0,
+			A2(
+				elm$core$Maybe$map,
+				elm$time$Time$posixToMillis,
+				A2(
+					elm$core$Maybe$andThen,
+					function ($) {
+						return $.startedAt;
+					},
+					A2(
+						elm$core$Maybe$andThen,
+						elm$core$List$head,
+						A2(
+							elm$core$Maybe$map,
+							elm$core$Tuple$second,
+							elm_community$list_extra$List$Extra$last(
+								elm$core$Dict$toList(grouped)))))));
+		var fixed = A3(
+			elm$core$List$foldl,
+			insertEmpty,
+			grouped,
+			A2(
+				elm$core$List$map,
+				author$project$Lessons$toDateTriplet(zone),
+				A2(
+					elm$core$List$map,
+					elm$time$Time$millisToPosix,
+					A2(
+						elm$core$List$map,
+						elm$core$Basics$add(firstDay),
+						A2(
+							elm$core$List$map,
+							elm$core$Basics$mul(author$project$Lessons$millisPerDay),
+							A2(elm$core$List$range, 0, (((lastDay - firstDay) / author$project$Lessons$millisPerDay) | 0) + 1))))));
+		return fixed;
 	});
 var elm$core$Debug$toString = _Debug_toString;
 var elm$json$Json$Decode$map2 = _Json_map2;
@@ -7496,7 +7604,17 @@ var elm$html$Html$Attributes$stringProperty = F2(
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var author$project$Lessons$view = F2(
 	function (zone, lessons) {
-		var days = A2(author$project$Lessons$groupByDay, zone, lessons);
+		var days = A2(
+			elm$core$List$map,
+			function (_n0) {
+				var k = _n0.a;
+				var v = _n0.b;
+				return _Utils_Tuple2(
+					k,
+					elm$core$List$length(v));
+			},
+			elm$core$Dict$toList(
+				A2(author$project$Lessons$groupByDay, zone, lessons)));
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -7702,25 +7820,6 @@ var elm$core$List$drop = F2(
 					continue drop;
 				}
 			}
-		}
-	});
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
 		}
 	});
 var elm$html$Html$td = _VirtualDom_node('td');

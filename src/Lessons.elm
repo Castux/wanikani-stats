@@ -51,6 +51,10 @@ toDateTriplet zone posix =
     ( Time.toYear zone posix, toNumericalMonth <| Time.toMonth zone posix, Time.toDay zone posix )
 
 
+millisPerDay =
+    1000 * 3600 * 24
+
+
 groupByDay zone lessons =
     let
         decorated =
@@ -73,8 +77,39 @@ groupByDay zone lessons =
 
         grouped =
             List.foldl insert Dict.empty decorated
+
+        firstDay =
+            grouped
+                |> Dict.toList
+                |> List.head
+                |> Maybe.map Tuple.second
+                |> Maybe.andThen List.head
+                |> Maybe.andThen .startedAt
+                |> Maybe.map Time.posixToMillis
+                |> Maybe.withDefault 0
+
+        lastDay =
+            grouped
+                |> Dict.toList
+                |> List.Extra.last
+                |> Maybe.map Tuple.second
+                |> Maybe.andThen List.head
+                |> Maybe.andThen .startedAt
+                |> Maybe.map Time.posixToMillis
+                |> Maybe.withDefault 0
+
+        insertEmpty triplet dict =
+            Dict.update triplet (Maybe.withDefault [] >> Just) dict
+
+        fixed =
+            List.range 0 ((lastDay - firstDay) // millisPerDay + 1)
+                |> List.map ((*) millisPerDay)
+                |> List.map ((+) firstDay)
+                |> List.map Time.millisToPosix
+                |> List.map (toDateTriplet zone)
+                |> List.foldl insertEmpty grouped
     in
-    grouped
+    fixed
 
 
 view : Time.Zone -> List Api.Lesson -> Html msg
@@ -82,6 +117,8 @@ view zone lessons =
     let
         days =
             groupByDay zone lessons
+                |> Dict.toList
+                |> List.map (\( k, v ) -> ( k, List.length v ))
     in
     Html.div
         [ Html.Attributes.class "box" ]
