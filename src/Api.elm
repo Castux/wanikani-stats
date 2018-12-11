@@ -39,6 +39,14 @@ type ApiUrl
     | Full String
 
 
+
+-- 60 days in milliseconds
+
+
+filterDuration =
+    1000 * 3600 * 24 * 60
+
+
 treatString : String -> Maybe Time.Posix
 treatString string =
     case ISO8601.fromString string of
@@ -80,15 +88,23 @@ collectionDecoder dataDecoder =
         (D.field "data" (D.list dataDecoder))
 
 
-getCollection key url decoder messageCons =
+getCollection key url now decoder messageCons =
     let
+        startDate =
+            (Time.posixToMillis now - filterDuration)
+                |> ISO8601.fromTime
+                |> ISO8601.toString
+
         finalUrl =
             case url of
                 Full str ->
                     str
 
                 Route str ->
-                    "https://api.wanikani.com/v2/" ++ str
+                    "https://api.wanikani.com/v2/"
+                        ++ str
+                        ++ "?updated_after="
+                        ++ startDate
 
         request =
             Http.request
@@ -111,7 +127,7 @@ getCollection key url decoder messageCons =
                         Just nextUrl ->
                             messageCons
                                 payload.data
-                                (Just (getCollection key (Full nextUrl) decoder messageCons))
+                                (Just (getCollection key (Full nextUrl) now decoder messageCons))
 
                         Nothing ->
                             messageCons payload.data Nothing
@@ -119,11 +135,11 @@ getCollection key url decoder messageCons =
     Http.send responseHandler request
 
 
-getReviews : String -> (List Review -> Maybe (Cmd msg) -> msg) -> Cmd msg
-getReviews key messageCons =
-    getCollection key (Route "reviews") reviewDecoder messageCons
+getReviews : String -> Time.Posix -> (List Review -> Maybe (Cmd msg) -> msg) -> Cmd msg
+getReviews key now messageCons =
+    getCollection key (Route "reviews") now reviewDecoder messageCons
 
 
-getLessons : String -> (List Lesson -> Maybe (Cmd msg) -> msg) -> Cmd msg
-getLessons key messageCons =
-    getCollection key (Route "assignments") lessonDecoder messageCons
+getLessons : String -> Time.Posix -> (List Lesson -> Maybe (Cmd msg) -> msg) -> Cmd msg
+getLessons key now messageCons =
+    getCollection key (Route "assignments") now lessonDecoder messageCons

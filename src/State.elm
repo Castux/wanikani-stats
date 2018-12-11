@@ -11,6 +11,7 @@ type Message
     | GotLessons (List Api.Lesson) (Maybe (Cmd Message))
     | GotSolution (List Float)
     | GotTimezone Time.Zone
+    | GotTime Time.Posix
     | NewLessonRate String
 
 

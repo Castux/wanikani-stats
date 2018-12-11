@@ -59,9 +59,8 @@ parseUrl stringUrl =
 startLoading key =
     ( { initState | key = key }
     , Cmd.batch
-        [ Api.getReviews key GotReviews
-        , Api.getLessons key GotLessons
-        , Task.perform GotTimezone Time.here
+        [ Task.perform GotTimezone Time.here
+        , Task.perform GotTime Time.now
         ]
     )
 
@@ -143,6 +142,14 @@ update msg state =
 
         GotTimezone zone ->
             ( { state | zone = zone }, Cmd.none )
+
+        GotTime time ->
+            ( state
+            , Cmd.batch
+                [ Api.getReviews state.key time GotReviews
+                , Api.getLessons state.key time GotLessons
+                ]
+            )
 
         NewLessonRate rateStr ->
             let

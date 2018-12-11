@@ -116,7 +116,7 @@ viewProbasBox state =
         [ Html.Attributes.class "box" ]
         [ Html.h2 [] [ Html.text "Accuracy" ]
         , viewProbas state.probas
-        , Html.p [] [ Html.text <| "(based on " ++ String.fromInt (List.length state.reviews) ++ " reviews)" ]
+        , Html.p [] [ Html.text <| "(based on " ++ String.fromInt (List.length state.reviews) ++ " reviews in the past 60 days)" ]
         ]
 
 
