@@ -223,8 +223,6 @@ viewResults state =
             [ viewRates rates state.lessonRate
             , viewQueueSizes rates state.lessonRate
             , viewBurnTime rates
-
-            --, Lessons.view state.lessonDates
             ]
 
         Nothing ->
@@ -247,7 +245,9 @@ view state =
             [ Lessons.view state.zone state.lessons ]
 
         elements =
-            top ++ results ++ lessons
+            top ++ results
+
+        --++ lessons
     in
     Html.div
         [ Html.Attributes.class "main" ]

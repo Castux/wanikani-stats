@@ -147,7 +147,8 @@ update msg state =
             ( state
             , Cmd.batch
                 [ Api.getReviews state.key time GotReviews
-                , Api.getLessons state.key time GotLessons
+
+                --, Api.getLessons state.key time GotLessons
                 ]
             )
 
